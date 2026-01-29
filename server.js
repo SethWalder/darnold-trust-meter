@@ -160,8 +160,8 @@ app.post('/api/click', async (req, res) => {
     const countResult = await pool.query('SELECT COUNT(*) as count FROM clicks');
     const clickCount = parseInt(countResult.rows[0].count);
     
-    // Take a snapshot every 10 clicks for the history chart
-    if (clickCount % 10 === 0) {
+    // Take a snapshot every 1 click for the history chart (testing mode)
+    if (clickCount % 1 === 0) {
       const clicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
       const clicks = clicksResult.rows;
       const trustLevel = calculateTrustLevel(clicks);
