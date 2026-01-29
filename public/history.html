@@ -24,9 +24,6 @@
         <div class="chart-wrapper">
           <canvas id="historyChart"></canvas>
         </div>
-        <div id="no-data" class="no-data hidden">
-          <p>Not enough data yet. Come back after more votes.</p>
-        </div>
       </div>
       
       <div class="meter-section" style="text-align: center;">
@@ -63,8 +60,7 @@
         document.getElementById('total-votes').textContent = trustData.totalClicks;
         
         if (historyData.length < 2) {
-          document.getElementById('no-data').classList.remove('hidden');
-          document.getElementById('historyChart').style.display = 'none';
+          // Not enough data yet, just show empty chart
           return;
         }
         

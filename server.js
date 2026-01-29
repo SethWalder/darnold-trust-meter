@@ -47,7 +47,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Helper to get user hash from IP (for cooldown tracking)
 function getUserHash(req) {
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
+  // x-forwarded-for can have multiple IPs, take the first one (client IP)
+  if (ip.includes(',')) {
+    ip = ip.split(',')[0].trim();
+  }
   return crypto.createHash('sha256').update(ip + 'darnold-salt').digest('hex').substring(0, 16);
 }
 
@@ -90,19 +94,23 @@ app.get('/api/trust', async (req, res) => {
     let canClick = true;
     let cooldownRemaining = 0;
     
+    // Use PostgreSQL to calculate time difference (avoids timezone issues)
     const lastClickResult = await pool.query(
-      'SELECT created_at FROM clicks WHERE user_hash = $1 ORDER BY created_at DESC LIMIT 1',
+      `SELECT EXTRACT(EPOCH FROM (NOW() - created_at)) as seconds_ago 
+       FROM clicks 
+       WHERE user_hash = $1 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
       [userHash]
     );
     
     if (lastClickResult.rows.length > 0) {
-      const lastClickTime = new Date(lastClickResult.rows[0].created_at).getTime();
-      const now = Date.now();
-      const fiveMinutes = 5 * 60 * 1000;
+      const secondsAgo = parseFloat(lastClickResult.rows[0].seconds_ago);
+      const fiveMinutes = 5 * 60; // in seconds
       
-      if (now - lastClickTime < fiveMinutes) {
+      if (secondsAgo < fiveMinutes) {
         canClick = false;
-        cooldownRemaining = Math.ceil((fiveMinutes - (now - lastClickTime)) / 1000);
+        cooldownRemaining = Math.ceil(fiveMinutes - secondsAgo);
       }
     }
     
@@ -130,19 +138,22 @@ app.post('/api/click', async (req, res) => {
       return res.status(400).json({ error: 'Invalid direction' });
     }
     
-    // Check cooldown
-    const lastClickResult = await pool.query(
-      'SELECT created_at FROM clicks WHERE user_hash = $1 ORDER BY created_at DESC LIMIT 1',
+    // Check cooldown using PostgreSQL to calculate time difference
+    const cooldownCheck = await pool.query(
+      `SELECT EXTRACT(EPOCH FROM (NOW() - created_at)) as seconds_ago 
+       FROM clicks 
+       WHERE user_hash = $1 
+       ORDER BY created_at DESC 
+       LIMIT 1`,
       [userHash]
     );
     
-    if (lastClickResult.rows.length > 0) {
-      const lastClickTime = new Date(lastClickResult.rows[0].created_at).getTime();
-      const now = Date.now();
-      const fiveMinutes = 5 * 60 * 1000;
+    if (cooldownCheck.rows.length > 0) {
+      const secondsAgo = parseFloat(cooldownCheck.rows[0].seconds_ago);
+      const fiveMinutes = 5 * 60; // in seconds
       
-      if (now - lastClickTime < fiveMinutes) {
-        const cooldownRemaining = Math.ceil((fiveMinutes - (now - lastClickTime)) / 1000);
+      if (secondsAgo < fiveMinutes) {
+        const cooldownRemaining = Math.ceil(fiveMinutes - secondsAgo);
         return res.status(429).json({ 
           error: 'Cooldown active', 
           cooldownRemaining 
