@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trust History | The Darnold Trust Meter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+<body>
+  <div class="container">
+    <header class="history-header">
+      <a href="/" class="back-link">← Back to Trust Meter</a>
+      <div class="masthead">THE DARNOLD TRUST METER</div>
+      <h1>Trust History</h1>
+    </header>
+
+    <main>
+      <div class="chart-container">
+        <div class="chart-wrapper">
+          <canvas id="historyChart"></canvas>
+        </div>
+        <div id="no-data" class="no-data hidden">
+          <p>Not enough data yet. Come back after more votes.</p>
+        </div>
+      </div>
+      
+      <div class="meter-section" style="text-align: center;">
+        <h2 style="font-family: 'Old Standard TT', serif; margin-bottom: 1rem; font-weight: 400;">Current Reading</h2>
+        <div style="font-family: 'Old Standard TT', serif; font-size: 3rem; font-weight: 700;">
+          <span id="current-trust">--</span>
+        </div>
+        <p style="color: var(--text-secondary); font-style: italic; margin-top: 0.5rem;">
+          Based on <span id="total-votes">--</span> votes
+        </p>
+      </div>
+    </main>
+
+    <footer>
+      <a href="/" class="history-link">Cast Your Vote</a>
+    </footer>
+  </div>
+
+  <script>
+    let chart = null;
+
+    async function loadHistory() {
+      try {
+        // Fetch history data
+        const historyResponse = await fetch('/api/history');
+        const historyData = await historyResponse.json();
+        
+        // Fetch current trust level
+        const trustResponse = await fetch('/api/trust');
+        const trustData = await trustResponse.json();
+        
+        // Update current stats
+        document.getElementById('current-trust').textContent = Math.round(trustData.trustLevel) + '%';
+        document.getElementById('total-votes').textContent = trustData.totalClicks;
+        
+        if (historyData.length < 2) {
+          document.getElementById('no-data').classList.remove('hidden');
+          document.getElementById('historyChart').style.display = 'none';
+          return;
+        }
+        
+        // Prepare chart data
+        const labels = historyData.map(d => new Date(d.created_at));
+        const values = historyData.map(d => d.trust_level);
+        
+        // Create gradient
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(196, 30, 58, 0.2)');
+        gradient.addColorStop(0.5, 'rgba(180, 180, 180, 0.1)');
+        gradient.addColorStop(1, 'rgba(95, 168, 211, 0.2)');
+        
+        // Create or update chart
+        if (chart) {
+          chart.data.labels = labels;
+          chart.data.datasets[0].data = values;
+          chart.update();
+        } else {
+          chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Trust Level',
+                data: values,
+                borderColor: '#1a1a1a',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 3,
+                pointBackgroundColor: '#1a1a1a',
+                pointBorderColor: '#f5f0e6',
+                pointBorderWidth: 2,
+                pointHoverRadius: 5
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  backgroundColor: '#1a1a1a',
+                  titleColor: '#f5f0e6',
+                  bodyColor: '#f5f0e6',
+                  borderColor: '#333',
+                  borderWidth: 1,
+                  padding: 12,
+                  displayColors: false,
+                  titleFont: {
+                    family: "'Old Standard TT', serif"
+                  },
+                  bodyFont: {
+                    family: "'Libre Baskerville', serif"
+                  },
+                  callbacks: {
+                    title: function(context) {
+                      return new Date(context[0].label).toLocaleString();
+                    },
+                    label: function(context) {
+                      return 'Trust Level: ' + Math.round(context.raw) + '%';
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  type: 'time',
+                  time: {
+                    displayFormats: {
+                      hour: 'MMM d, ha',
+                      day: 'MMM d'
+                    }
+                  },
+                  grid: {
+                    color: 'rgba(0, 0, 0, 0.08)',
+                    drawBorder: false
+                  },
+                  ticks: {
+                    color: '#555',
+                    font: {
+                      family: "'Libre Baskerville', serif",
+                      size: 11
+                    }
+                  }
+                },
+                y: {
+                  min: 0,
+                  max: 100,
+                  grid: {
+                    color: 'rgba(0, 0, 0, 0.08)',
+                    drawBorder: false
+                  },
+                  ticks: {
+                    color: '#555',
+                    font: {
+                      family: "'Libre Baskerville', serif",
+                      size: 11
+                    },
+                    callback: function(value) {
+                      return value + '%';
+                    }
+                  }
+                }
+              },
+              interaction: {
+                intersect: false,
+                mode: 'index'
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load history:', error);
+        document.getElementById('no-data').classList.remove('hidden');
+        document.getElementById('no-data').querySelector('p').textContent = 'Failed to load history data.';
+      }
+    }
+
+    // Load on page load
+    loadHistory();
+    
+    // Refresh every 30 seconds
+    setInterval(loadHistory, 30000);
+  </script>
+</body>
+</html>

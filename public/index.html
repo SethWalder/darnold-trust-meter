@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Darnold Trust Meter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Background Sam Darnold images - 3 on each side -->
+  <div class="background-images">
+    <div class="bg-column bg-column-left">
+      <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3912547.png&w=350&h=254" alt="" class="bg-darnold" />
+      <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3912547.png&w=350&h=254" alt="" class="bg-darnold" />
+      <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3912547.png&w=350&h=254" alt="" class="bg-darnold" />
+    </div>
+    <div class="bg-column bg-column-right">
+      <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3912547.png&w=350&h=254" alt="" class="bg-darnold" />
+      <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3912547.png&w=350&h=254" alt="" class="bg-darnold" />
+      <img src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3912547.png&w=350&h=254" alt="" class="bg-darnold" />
+    </div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>How much do you trust<br><span class="name">Sam Darnold</span><span class="right-now">RIGHT NOW</span></h1>
+    </header>
+
+    <main>
+      <div class="meter-section">
+        <div class="meter-container">
+          <!-- Ghost decorations on left -->
+          <div class="decoration ghosts">
+            <svg viewBox="0 0 60 80" class="ghost ghost-1">
+              <path d="M30 5 C15 5 5 20 5 35 L5 70 L12 60 L19 70 L26 60 L33 70 L40 60 L47 70 L55 60 L55 35 C55 20 45 5 30 5 Z" fill="currentColor"/>
+              <circle cx="22" cy="30" r="5" fill="#f5f0e6"/>
+              <circle cx="38" cy="30" r="5" fill="#f5f0e6"/>
+            </svg>
+            <svg viewBox="0 0 60 80" class="ghost ghost-2">
+              <path d="M30 5 C15 5 5 20 5 35 L5 70 L12 60 L19 70 L26 60 L33 70 L40 60 L47 70 L55 60 L55 35 C55 20 45 5 30 5 Z" fill="currentColor"/>
+              <circle cx="22" cy="30" r="5" fill="#f5f0e6"/>
+              <circle cx="38" cy="30" r="5" fill="#f5f0e6"/>
+            </svg>
+            <svg viewBox="0 0 60 80" class="ghost ghost-3">
+              <path d="M30 5 C15 5 5 20 5 35 L5 70 L12 60 L19 70 L26 60 L33 70 L40 60 L47 70 L55 60 L55 35 C55 20 45 5 30 5 Z" fill="currentColor"/>
+              <circle cx="22" cy="30" r="5" fill="#f5f0e6"/>
+              <circle cx="38" cy="30" r="5" fill="#f5f0e6"/>
+            </svg>
+          </div>
+
+          <!-- Fire decorations on right -->
+          <div class="decoration flames">
+            <svg viewBox="0 0 24 32" class="flame flame-1">
+              <path d="M12 0C12 0 4 10 4 18C4 24 7.5 28 12 28C16.5 28 20 24 20 18C20 10 12 0 12 0Z" fill="currentColor"/>
+              <path d="M12 8C12 8 8 14 8 19C8 23 9.8 25 12 25C14.2 25 16 23 16 19C16 14 12 8 12 8Z" fill="rgba(255,180,80,0.6)"/>
+              <path d="M12 14C12 14 10 17 10 20C10 22 10.9 23 12 23C13.1 23 14 22 14 20C14 17 12 14 12 14Z" fill="rgba(255,220,150,0.7)"/>
+            </svg>
+            <svg viewBox="0 0 24 32" class="flame flame-2">
+              <path d="M12 0C12 0 4 10 4 18C4 24 7.5 28 12 28C16.5 28 20 24 20 18C20 10 12 0 12 0Z" fill="currentColor"/>
+              <path d="M12 8C12 8 8 14 8 19C8 23 9.8 25 12 25C14.2 25 16 23 16 19C16 14 12 8 12 8Z" fill="rgba(255,180,80,0.6)"/>
+              <path d="M12 14C12 14 10 17 10 20C10 22 10.9 23 12 23C13.1 23 14 22 14 20C14 17 12 14 12 14Z" fill="rgba(255,220,150,0.7)"/>
+            </svg>
+            <svg viewBox="0 0 24 32" class="flame flame-3">
+              <path d="M12 0C12 0 4 10 4 18C4 24 7.5 28 12 28C16.5 28 20 24 20 18C20 10 12 0 12 0Z" fill="currentColor"/>
+              <path d="M12 8C12 8 8 14 8 19C8 23 9.8 25 12 25C14.2 25 16 23 16 19C16 14 12 8 12 8Z" fill="rgba(255,180,80,0.6)"/>
+              <path d="M12 14C12 14 10 17 10 20C10 22 10.9 23 12 23C13.1 23 14 22 14 20C14 17 12 14 12 14Z" fill="rgba(255,220,150,0.7)"/>
+            </svg>
+          </div>
+
+          <svg class="meter" viewBox="0 0 400 220" preserveAspectRatio="xMidYMid meet">
+            <!-- Background arc -->
+            <defs>
+              <linearGradient id="meterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#5fa8d3"/>
+                <stop offset="50%" style="stop-color:#b8b8b8"/>
+                <stop offset="100%" style="stop-color:#c41e3a"/>
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            
+            <!-- Meter background arc -->
+            <path 
+              d="M 30 190 A 170 170 0 0 1 370 190" 
+              fill="none" 
+              stroke="url(#meterGradient)" 
+              stroke-width="28"
+              stroke-linecap="round"
+            />
+            
+            <!-- Tick marks -->
+            <g class="ticks" stroke="#1a1a2e" stroke-width="2">
+              <line x1="30" y1="190" x2="45" y2="190"/>
+              <line x1="55" y1="115" x2="68" y2="123"/>
+              <line x1="115" y1="60" x2="122" y2="72"/>
+              <line x1="200" y1="35" x2="200" y2="50"/>
+              <line x1="285" y1="60" x2="278" y2="72"/>
+              <line x1="345" y1="115" x2="332" y2="123"/>
+              <line x1="370" y1="190" x2="355" y2="190"/>
+            </g>
+            
+            <!-- Needle pivot point -->
+            <circle cx="200" cy="190" r="14" fill="#1a1a2e"/>
+            <circle cx="200" cy="190" r="9" fill="#0f0f1a"/>
+            
+            <!-- Needle -->
+            <g id="needle" transform="rotate(-90, 200, 190)">
+              <polygon 
+                points="200,50 194,182 200,195 206,182" 
+                fill="#1a1a2e"
+                filter="url(#glow)"
+              />
+              <polygon 
+                points="200,58 196,178 200,188 204,178" 
+                fill="#1a1a1a"
+              />
+            </g>
+          </svg>
+        </div>
+        
+        <div class="button-row">
+          <button id="btn-less" class="vote-btn less" disabled>
+            <span class="btn-text">Trust Less</span>
+          </button>
+          
+          <button id="btn-more" class="vote-btn more" disabled>
+            <span class="btn-text">Trust More</span>
+          </button>
+        </div>
+        
+        <div id="cooldown-notice" class="cooldown hidden">
+          <span>You can vote again in <strong id="cooldown-time">5:00</strong></span>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <a href="/history" class="history-link">View Trust History</a>
+      <p class="credits">Website by Seth Walder. Idea by Bryan Knowles.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
