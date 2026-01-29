@@ -338,11 +338,36 @@ footer {
   
   .meter-section {
     padding: 1rem;
+    overflow: visible;
   }
   
   .decoration {
-    display: none;
+    display: flex;
   }
+  
+  .decoration.ghosts {
+    left: -5px;
+  }
+  
+  .decoration.flames {
+    right: -5px;
+  }
+  
+  .ghost {
+    width: 30px;
+    height: 38px;
+  }
+  
+  .ghost-2 { width: 24px; height: 30px; }
+  .ghost-3 { width: 20px; height: 25px; }
+  
+  .flame {
+    width: 26px;
+    height: 34px;
+  }
+  
+  .flame-2 { width: 20px; height: 27px; }
+  .flame-3 { width: 16px; height: 22px; }
   
   .button-row {
     gap: 1rem;
