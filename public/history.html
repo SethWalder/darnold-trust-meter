@@ -123,7 +123,9 @@
                   },
                   callbacks: {
                     title: function(context) {
-                      return new Date(context[0].label).toLocaleString();
+                      // context[0].parsed.x is the timestamp in milliseconds
+                      const date = new Date(context[0].parsed.x);
+                      return date.toLocaleString();
                     },
                     label: function(context) {
                       return 'Trust Level: ' + Math.round(context.raw) + '%';
