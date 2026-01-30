@@ -205,13 +205,13 @@ main {
   75% { transform: scaleY(1.05) scaleX(0.97); }
 }
 
-/* Needle Animation (Slow Jitter) */
+/* Needle Animation (Smooth continuous jitter) */
 @keyframes jitter {
-  0%, 100% { transform: rotate(var(--needle-angle)); }
-  20% { transform: rotate(calc(var(--needle-angle) + 1.2deg)); }
-  40% { transform: rotate(calc(var(--needle-angle) - 0.9deg)); }
-  60% { transform: rotate(calc(var(--needle-angle) + 0.7deg)); }
-  80% { transform: rotate(calc(var(--needle-angle) - 1deg)); }
+  0% { transform: rotate(calc(var(--needle-angle) + 0.8deg)); }
+  25% { transform: rotate(calc(var(--needle-angle) - 1deg)); }
+  50% { transform: rotate(calc(var(--needle-angle) + 1deg)); }
+  75% { transform: rotate(calc(var(--needle-angle) - 0.8deg)); }
+  100% { transform: rotate(calc(var(--needle-angle) + 0.8deg)); }
 }
 
 #needle {
