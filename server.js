@@ -171,8 +171,8 @@ app.post('/api/click', async (req, res) => {
     const countResult = await pool.query('SELECT COUNT(*) as count FROM clicks');
     const clickCount = parseInt(countResult.rows[0].count);
     
-    // Take a snapshot every 5 clicks for the history chart
-    if (clickCount % 5 === 0) {
+    // Take a snapshot every 10 clicks for the history chart
+    if (clickCount % 10 === 0) {
       const clicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
       const clicks = clicksResult.rows;
       const trustLevel = calculateTrustLevel(clicks);
@@ -206,11 +206,11 @@ app.post('/api/click', async (req, res) => {
   }
 });
 
-// Get history for the chart (only show every 5th snapshot)
+// Get history for the chart (only show every 10th snapshot)
 app.get('/api/history', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT trust_level, total_clicks, created_at FROM snapshots WHERE total_clicks % 5 = 0 ORDER BY created_at ASC LIMIT 500'
+      'SELECT trust_level, total_clicks, created_at FROM snapshots WHERE total_clicks % 10 = 0 ORDER BY created_at ASC LIMIT 500'
     );
     
     const snapshots = result.rows.map(row => ({
