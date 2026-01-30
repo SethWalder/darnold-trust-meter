@@ -208,10 +208,10 @@ main {
 /* Needle Animation (Slow Jitter) */
 @keyframes jitter {
   0%, 100% { transform: rotate(var(--needle-angle)); }
-  20% { transform: rotate(calc(var(--needle-angle) + 0.4deg)); }
-  40% { transform: rotate(calc(var(--needle-angle) - 0.3deg)); }
-  60% { transform: rotate(calc(var(--needle-angle) + 0.2deg)); }
-  80% { transform: rotate(calc(var(--needle-angle) - 0.35deg)); }
+  20% { transform: rotate(calc(var(--needle-angle) + 1.2deg)); }
+  40% { transform: rotate(calc(var(--needle-angle) - 0.9deg)); }
+  60% { transform: rotate(calc(var(--needle-angle) + 0.7deg)); }
+  80% { transform: rotate(calc(var(--needle-angle) - 1deg)); }
 }
 
 #needle {
