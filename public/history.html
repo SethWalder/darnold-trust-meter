@@ -10,17 +10,50 @@
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <style>
+    .time-filters {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .time-filter-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #555;
+      background: transparent;
+      color: #555;
+      font-family: 'Old Standard TT', serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .time-filter-btn:hover {
+      background: #555;
+      color: #f5f0e6;
+    }
+    .time-filter-btn.active {
+      background: #1a1a1a;
+      color: #f5f0e6;
+      border-color: #1a1a1a;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <header class="history-header">
       <a href="/" class="back-link">← Back to Trust Meter</a>
-      <div class="masthead">THE DARNOLD TRUST METER</div>
       <h1>Trust History</h1>
     </header>
 
     <main>
       <div class="chart-container">
+        <div class="time-filters">
+          <button class="time-filter-btn" data-hours="1">Last 1 Hour</button>
+          <button class="time-filter-btn" data-hours="4">Last 4 Hours</button>
+          <button class="time-filter-btn active" data-hours="24">Last 24 Hours</button>
+          <button class="time-filter-btn" data-hours="all">All Time</button>
+        </div>
         <div class="chart-wrapper">
           <canvas id="historyChart"></canvas>
         </div>
@@ -44,12 +77,40 @@
 
   <script>
     let chart = null;
+    let allHistoryData = [];
+    let currentFilter = 24; // Default to 24 hours
+
+    // Filter data based on time range
+    function filterDataByHours(data, hours) {
+      if (hours === 'all') return data;
+      
+      const now = new Date();
+      const cutoff = new Date(now.getTime() - (hours * 60 * 60 * 1000));
+      
+      return data.filter(d => new Date(d.created_at) >= cutoff);
+    }
+
+    // Update chart with filtered data
+    function updateChart(filteredData) {
+      if (filteredData.length < 1) {
+        return;
+      }
+      
+      const labels = filteredData.map(d => new Date(d.created_at));
+      const values = filteredData.map(d => d.trust_level);
+      
+      if (chart) {
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = values;
+        chart.update();
+      }
+    }
 
     async function loadHistory() {
       try {
         // Fetch history data
         const historyResponse = await fetch('/api/history');
-        const historyData = await historyResponse.json();
+        allHistoryData = await historyResponse.json();
         
         // Fetch current trust level
         const trustResponse = await fetch('/api/trust');
@@ -59,14 +120,16 @@
         document.getElementById('current-trust').textContent = Math.round(trustData.trustLevel) + '%';
         document.getElementById('total-votes').textContent = trustData.totalClicks;
         
-        if (historyData.length < 2) {
-          // Not enough data yet, just show empty chart
+        // Filter and display data
+        const filteredData = filterDataByHours(allHistoryData, currentFilter);
+        
+        if (filteredData.length < 1) {
           return;
         }
         
         // Prepare chart data
-        const labels = historyData.map(d => new Date(d.created_at));
-        const values = historyData.map(d => d.trust_level);
+        const labels = filteredData.map(d => new Date(d.created_at));
+        const values = filteredData.map(d => d.trust_level);
         
         // Create gradient
         const ctx = document.getElementById('historyChart').getContext('2d');
@@ -123,7 +186,6 @@
                   },
                   callbacks: {
                     title: function(context) {
-                      // context[0].parsed.x is the timestamp in milliseconds
                       const date = new Date(context[0].parsed.x);
                       return date.toLocaleString();
                     },
@@ -182,10 +244,25 @@
         }
       } catch (error) {
         console.error('Failed to load history:', error);
-        document.getElementById('no-data').classList.remove('hidden');
-        document.getElementById('no-data').querySelector('p').textContent = 'Failed to load history data.';
       }
     }
+
+    // Set up filter button click handlers
+    document.querySelectorAll('.time-filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update active state
+        document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Get filter value
+        const hours = this.dataset.hours;
+        currentFilter = hours === 'all' ? 'all' : parseInt(hours);
+        
+        // Filter and update chart
+        const filteredData = filterDataByHours(allHistoryData, currentFilter);
+        updateChart(filteredData);
+      });
+    });
 
     // Load on page load
     loadHistory();
