@@ -172,9 +172,9 @@ app.post('/api/click', async (req, res) => {
     const clickCount = parseInt(countResult.rows[0].count);
     
     // Take a snapshot with every vote (for granular time-based history)
-    const clicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
-    const clicks = clicksResult.rows;
-    const snapshotTrustLevel = calculateTrustLevel(clicks);
+    const allClicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
+    const allClicks = allClicksResult.rows;
+    const snapshotTrustLevel = calculateTrustLevel(allClicks);
     
     await pool.query(
       'INSERT INTO snapshots (trust_level, total_clicks) VALUES ($1, $2)',
@@ -182,12 +182,9 @@ app.post('/api/click', async (req, res) => {
     );
     
     // Return updated trust level
-    const clicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
-    const clicks = clicksResult.rows;
-    
-    const trustLevel = calculateTrustLevel(clicks);
-    const totalClicks = clicks.length;
-    const moreClicks = clicks.filter(c => c.direction === 'more').length;
+    const trustLevel = snapshotTrustLevel;
+    const totalClicks = allClicks.length;
+    const moreClicks = allClicks.filter(c => c.direction === 'more').length;
     
     res.json({
       success: true,
