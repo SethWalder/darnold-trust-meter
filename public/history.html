@@ -107,18 +107,18 @@
     }
 
     // Aggregate data into time buckets - show trust level as it was at the START of each bucket
-    // Fill in empty buckets by carrying forward the previous value
-    function aggregateByTimeInterval(data, intervalMinutes) {
-      if (data.length === 0) return [];
+    // allData = complete dataset, filteredData = what to display, intervalMinutes = bucket size
+    function aggregateByTimeInterval(allData, filteredData, intervalMinutes, hours) {
+      if (filteredData.length === 0) return [];
       
       const intervalMs = intervalMinutes * 60 * 1000;
       
-      // Sort data by time
-      const sortedData = [...data].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      // Sort all data by time
+      const sortedAllData = [...allData].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       
-      // Find all unique bucket times from the data
+      // Find all unique bucket times from the filtered data
       const bucketSet = new Set();
-      sortedData.forEach(d => {
+      filteredData.forEach(d => {
         const timestamp = new Date(d.created_at).getTime();
         const bucketTime = Math.floor(timestamp / intervalMs) * intervalMs;
         bucketSet.add(bucketTime);
@@ -127,27 +127,34 @@
       const bucketTimes = Array.from(bucketSet).sort((a, b) => a - b);
       if (bucketTimes.length === 0) return [];
       
-      // For each bucket, find the trust level as it was at the START of that bucket
-      // (i.e., the last snapshot before or at the bucket start time)
+      // For each bucket, find the trust level from ALL data as it was at the START of that bucket
       const result = [];
       
       for (let i = 0; i < bucketTimes.length; i++) {
         const bucketStart = bucketTimes[i];
         
-        // Find the last snapshot at or before this bucket start time
-        let trustLevel = 50; // default
-        for (let j = sortedData.length - 1; j >= 0; j--) {
-          const snapshotTime = new Date(sortedData[j].created_at).getTime();
+        // Find the last snapshot at or before this bucket start time from ALL data
+        let trustLevel = null;
+        for (let j = sortedAllData.length - 1; j >= 0; j--) {
+          const snapshotTime = new Date(sortedAllData[j].created_at).getTime();
           if (snapshotTime <= bucketStart) {
-            trustLevel = sortedData[j].trust_level;
+            trustLevel = sortedAllData[j].trust_level;
             break;
           }
         }
         
-        result.push({
-          created_at: new Date(bucketStart).toISOString(),
-          trust_level: trustLevel
-        });
+        // If no snapshot found at or before bucket start (shouldn't happen with all data),
+        // use the first available snapshot
+        if (trustLevel === null && sortedAllData.length > 0) {
+          trustLevel = sortedAllData[0].trust_level;
+        }
+        
+        if (trustLevel !== null) {
+          result.push({
+            created_at: new Date(bucketStart).toISOString(),
+            trust_level: trustLevel
+          });
+        }
       }
       
       // Now fill in gaps between buckets
@@ -176,11 +183,11 @@
       return completeResult;
     }
 
-    // Process data: filter by time range, then aggregate by interval
+    // Process data: filter by time range for display, but use all data to determine trust levels
     function processData(data, hours) {
       const filtered = filterDataByHours(data, hours);
       const interval = timeIntervals[hours] || timeIntervals.all;
-      return aggregateByTimeInterval(filtered, interval);
+      return aggregateByTimeInterval(data, filtered, interval, hours);
     }
 
     // Update chart with processed data
