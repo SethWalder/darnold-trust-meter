@@ -106,7 +106,7 @@
       return data.filter(d => new Date(d.created_at) >= cutoff);
     }
 
-    // Aggregate data into time buckets (take last snapshot in each bucket)
+    // Aggregate data into time buckets (take last snapshot in each bucket, place at bucket start time)
     function aggregateByTimeInterval(data, intervalMinutes) {
       if (data.length === 0) return [];
       
@@ -119,13 +119,22 @@
         const bucketTime = Math.floor(timestamp / intervalMs) * intervalMs;
         
         // Keep the latest snapshot in each bucket
-        if (!buckets.has(bucketTime) || new Date(d.created_at).getTime() > new Date(buckets.get(bucketTime).created_at).getTime()) {
-          buckets.set(bucketTime, d);
+        if (!buckets.has(bucketTime) || new Date(d.created_at).getTime() > new Date(buckets.get(bucketTime).originalTime).getTime()) {
+          buckets.set(bucketTime, {
+            trust_level: d.trust_level,
+            originalTime: d.created_at
+          });
         }
       });
       
-      // Convert to array
-      const result = Array.from(buckets.values());
+      // Convert to array with uniform bucket timestamps
+      const result = [];
+      buckets.forEach((data, bucketTime) => {
+        result.push({
+          created_at: new Date(bucketTime).toISOString(),
+          trust_level: data.trust_level
+        });
+      });
       
       // Sort by time
       result.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
