@@ -171,17 +171,15 @@ app.post('/api/click', async (req, res) => {
     const countResult = await pool.query('SELECT COUNT(*) as count FROM clicks');
     const clickCount = parseInt(countResult.rows[0].count);
     
-    // Take a snapshot every 25 clicks for the history chart
-    if (clickCount % 25 === 0) {
-      const clicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
-      const clicks = clicksResult.rows;
-      const trustLevel = calculateTrustLevel(clicks);
-      
-      await pool.query(
-        'INSERT INTO snapshots (trust_level, total_clicks) VALUES ($1, $2)',
-        [trustLevel, clickCount]
-      );
-    }
+    // Take a snapshot with every vote (for granular time-based history)
+    const clicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
+    const clicks = clicksResult.rows;
+    const snapshotTrustLevel = calculateTrustLevel(clicks);
+    
+    await pool.query(
+      'INSERT INTO snapshots (trust_level, total_clicks) VALUES ($1, $2)',
+      [snapshotTrustLevel, clickCount]
+    );
     
     // Return updated trust level
     const clicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
@@ -206,11 +204,11 @@ app.post('/api/click', async (req, res) => {
   }
 });
 
-// Get history for the chart (only show every 25th snapshot)
+// Get history for the chart (returns all snapshots, frontend will aggregate by time)
 app.get('/api/history', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT trust_level, total_clicks, created_at FROM snapshots WHERE total_clicks % 25 = 0 ORDER BY created_at ASC LIMIT 500'
+      'SELECT trust_level, total_clicks, created_at FROM snapshots ORDER BY created_at ASC'
     );
     
     const snapshots = result.rows.map(row => ({

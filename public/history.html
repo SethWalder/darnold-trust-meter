@@ -88,6 +88,14 @@
     let allHistoryData = [];
     let currentFilter = 24; // Default to 24 hours
 
+    // Time intervals in minutes for each filter
+    const timeIntervals = {
+      1: 5,      // 1 hour view: every 5 minutes
+      4: 10,     // 4 hour view: every 10 minutes
+      24: 60,    // 24 hour view: every hour
+      all: 240   // All time view: every 4 hours
+    };
+
     // Filter data based on time range
     function filterDataByHours(data, hours) {
       if (hours === 'all') return data;
@@ -98,14 +106,48 @@
       return data.filter(d => new Date(d.created_at) >= cutoff);
     }
 
-    // Update chart with filtered data
-    function updateChart(filteredData) {
-      if (filteredData.length < 1) {
+    // Aggregate data into time buckets (take last snapshot in each bucket)
+    function aggregateByTimeInterval(data, intervalMinutes) {
+      if (data.length === 0) return [];
+      
+      const intervalMs = intervalMinutes * 60 * 1000;
+      const buckets = new Map();
+      
+      data.forEach(d => {
+        const timestamp = new Date(d.created_at).getTime();
+        // Round down to nearest interval
+        const bucketTime = Math.floor(timestamp / intervalMs) * intervalMs;
+        
+        // Keep the latest snapshot in each bucket
+        if (!buckets.has(bucketTime) || new Date(d.created_at).getTime() > new Date(buckets.get(bucketTime).created_at).getTime()) {
+          buckets.set(bucketTime, d);
+        }
+      });
+      
+      // Convert to array
+      const result = Array.from(buckets.values());
+      
+      // Sort by time
+      result.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      
+      return result;
+    }
+
+    // Process data: filter by time range, then aggregate by interval
+    function processData(data, hours) {
+      const filtered = filterDataByHours(data, hours);
+      const interval = timeIntervals[hours] || timeIntervals.all;
+      return aggregateByTimeInterval(filtered, interval);
+    }
+
+    // Update chart with processed data
+    function updateChart(processedData) {
+      if (processedData.length < 1) {
         return;
       }
       
-      const labels = filteredData.map(d => new Date(d.created_at));
-      const values = filteredData.map(d => d.trust_level);
+      const labels = processedData.map(d => new Date(d.created_at));
+      const values = processedData.map(d => d.trust_level);
       
       if (chart) {
         chart.data.labels = labels;
@@ -128,16 +170,16 @@
         document.getElementById('current-trust').textContent = Math.round(trustData.trustLevel) + '%';
         document.getElementById('total-votes').textContent = trustData.totalClicks;
         
-        // Filter and display data
-        const filteredData = filterDataByHours(allHistoryData, currentFilter);
+        // Process and display data
+        const processedData = processData(allHistoryData, currentFilter);
         
-        if (filteredData.length < 1) {
+        if (processedData.length < 1) {
           return;
         }
         
         // Prepare chart data
-        const labels = filteredData.map(d => new Date(d.created_at));
-        const values = filteredData.map(d => d.trust_level);
+        const labels = processedData.map(d => new Date(d.created_at));
+        const values = processedData.map(d => d.trust_level);
         
         // Create gradient
         const ctx = document.getElementById('historyChart').getContext('2d');
@@ -266,9 +308,9 @@
         const hours = this.dataset.hours;
         currentFilter = hours === 'all' ? 'all' : parseInt(hours);
         
-        // Filter and update chart
-        const filteredData = filterDataByHours(allHistoryData, currentFilter);
-        updateChart(filteredData);
+        // Process and update chart
+        const processedData = processData(allHistoryData, currentFilter);
+        updateChart(processedData);
       });
     });
 
