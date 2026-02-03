@@ -107,12 +107,14 @@
     }
 
     // Aggregate data into time buckets (take last snapshot in each bucket, place at bucket start time)
+    // Fill in empty buckets by carrying forward the previous value
     function aggregateByTimeInterval(data, intervalMinutes) {
       if (data.length === 0) return [];
       
       const intervalMs = intervalMinutes * 60 * 1000;
       const buckets = new Map();
       
+      // First pass: collect actual data points
       data.forEach(d => {
         const timestamp = new Date(d.created_at).getTime();
         // Round down to nearest interval
@@ -127,17 +129,26 @@
         }
       });
       
-      // Convert to array with uniform bucket timestamps
+      if (buckets.size === 0) return [];
+      
+      // Get the range of bucket times
+      const bucketTimes = Array.from(buckets.keys()).sort((a, b) => a - b);
+      const firstBucket = bucketTimes[0];
+      const lastBucket = bucketTimes[bucketTimes.length - 1];
+      
+      // Second pass: fill in all buckets from first to last
       const result = [];
-      buckets.forEach((data, bucketTime) => {
+      let previousTrustLevel = buckets.get(firstBucket).trust_level;
+      
+      for (let bucketTime = firstBucket; bucketTime <= lastBucket; bucketTime += intervalMs) {
+        if (buckets.has(bucketTime)) {
+          previousTrustLevel = buckets.get(bucketTime).trust_level;
+        }
         result.push({
           created_at: new Date(bucketTime).toISOString(),
-          trust_level: data.trust_level
+          trust_level: previousTrustLevel
         });
-      });
-      
-      // Sort by time
-      result.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      }
       
       return result;
     }
