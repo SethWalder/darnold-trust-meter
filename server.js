@@ -41,6 +41,45 @@ async function initializeDatabase() {
 
 initializeDatabase();
 
+// In-memory cache for current trust level (to avoid recalculating constantly)
+let cachedTrustData = {
+  trustLevel: 50,
+  totalClicks: 0,
+  moreClicks: 0,
+  lastUpdated: 0
+};
+
+// Update cache
+async function updateTrustCache() {
+  try {
+    // Only get last 100 clicks for trust calculation (much faster)
+    const clicksResult = await pool.query(
+      'SELECT direction FROM clicks ORDER BY created_at DESC LIMIT 100'
+    );
+    const recentClicks = clicksResult.rows.reverse(); // Put back in chronological order
+    
+    // Get total count
+    const countResult = await pool.query('SELECT COUNT(*) as count FROM clicks');
+    const totalClicks = parseInt(countResult.rows[0].count);
+    
+    const trustLevel = calculateTrustLevel(recentClicks, totalClicks);
+    const moreClicks = recentClicks.filter(c => c.direction === 'more').length;
+    
+    cachedTrustData = {
+      trustLevel,
+      totalClicks,
+      moreClicks,
+      lastUpdated: Date.now()
+    };
+  } catch (err) {
+    console.error('Error updating trust cache:', err);
+  }
+}
+
+
+// Initialize cache on startup
+updateTrustCache();
+
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -55,40 +94,37 @@ function getUserHash(req) {
   return crypto.createHash('sha256').update(ip + 'darnold-salt').digest('hex').substring(0, 16);
 }
 
-// Calculate trust level based on clicks
+// Calculate trust level based on clicks (optimized for large datasets)
 // If fewer than 100 votes: start at 50, move 1% per vote
 // If 100+ votes: use the last 100 votes as percentages
-function calculateTrustLevel(clicks) {
-  const totalClicks = clicks.length;
+function calculateTrustLevel(recentClicks, totalClicks) {
+  // If only one argument passed (backwards compatibility)
+  if (totalClicks === undefined) {
+    totalClicks = recentClicks.length;
+  }
   
   if (totalClicks === 0) {
     return 50;
   }
   
   if (totalClicks < 100) {
-    const moreClicks = clicks.filter(c => c.direction === 'more').length;
+    const moreClicks = recentClicks.filter(c => c.direction === 'more').length;
     const lessClicks = totalClicks - moreClicks;
-    const trustLevel = 50 + moreClicks - lessClicks;
-    return Math.max(0, Math.min(100, trustLevel));
+    return Math.max(0, Math.min(100, 50 + moreClicks - lessClicks));
   } else {
-    const recentClicks = clicks.slice(-100);
+    // Use last 100 clicks as percentage
     const moreClicks = recentClicks.filter(c => c.direction === 'more').length;
     return moreClicks;
   }
 }
 
-// Get current trust level
+// Get current trust level (uses cache for speed)
 app.get('/api/trust', async (req, res) => {
   try {
     const userHash = getUserHash(req);
     
-    // Get all clicks (we'll optimize this later if needed)
-    const clicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
-    const clicks = clicksResult.rows;
-    
-    const trustLevel = calculateTrustLevel(clicks);
-    const totalClicks = clicks.length;
-    const moreClicks = clicks.filter(c => c.direction === 'more').length;
+    // Use cached trust data (updated on each vote)
+    const { trustLevel, totalClicks, moreClicks } = cachedTrustData;
     
     // Check if user can click (5 minute cooldown)
     let canClick = true;
@@ -171,20 +207,17 @@ app.post('/api/click', async (req, res) => {
     const countResult = await pool.query('SELECT COUNT(*) as count FROM clicks');
     const clickCount = parseInt(countResult.rows[0].count);
     
-    // Take a snapshot with every vote (for granular time-based history)
-    const allClicksResult = await pool.query('SELECT direction FROM clicks ORDER BY created_at ASC');
-    const allClicks = allClicksResult.rows;
-    const snapshotTrustLevel = calculateTrustLevel(allClicks);
+    // Update the cache with new vote
+    await updateTrustCache();
     
+    // Take a snapshot with every vote (for granular time-based history)
     await pool.query(
       'INSERT INTO snapshots (trust_level, total_clicks) VALUES ($1, $2)',
-      [snapshotTrustLevel, clickCount]
+      [cachedTrustData.trustLevel, clickCount]
     );
     
-    // Return updated trust level
-    const trustLevel = snapshotTrustLevel;
-    const totalClicks = allClicks.length;
-    const moreClicks = allClicks.filter(c => c.direction === 'more').length;
+    // Return updated trust level from cache
+    const { trustLevel, totalClicks, moreClicks } = cachedTrustData;
     
     res.json({
       success: true,
@@ -201,11 +234,15 @@ app.post('/api/click', async (req, res) => {
   }
 });
 
-// Get history for the chart (returns all snapshots, frontend will aggregate by time)
+// Get history for the chart (returns recent snapshots, frontend will aggregate by time)
 app.get('/api/history', async (req, res) => {
   try {
+    // Only fetch last 7 days of snapshots for performance (frontend filters further)
     const result = await pool.query(
-      'SELECT trust_level, total_clicks, created_at FROM snapshots ORDER BY created_at ASC'
+      `SELECT trust_level, total_clicks, created_at 
+       FROM snapshots 
+       WHERE created_at > NOW() - INTERVAL '7 days'
+       ORDER BY created_at ASC`
     );
     
     const snapshots = result.rows.map(row => ({
