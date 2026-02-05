@@ -37,6 +37,12 @@
             </div>
             
             <div class="prop-admin-actions">
+                <form method="POST" action="{{ url_for('admin_move_prop', prop_id=prop.id, direction='up') }}" class="inline-form">
+                    <button type="submit" class="move-link" {% if loop.first %}disabled{% endif %}>↑ Up</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin_move_prop', prop_id=prop.id, direction='down') }}" class="inline-form">
+                    <button type="submit" class="move-link" {% if loop.last %}disabled{% endif %}>↓ Down</button>
+                </form>
                 <a href="{{ url_for('admin_edit_prop', prop_id=prop.id) }}" class="edit-link">Edit</a>
                 <form method="POST" action="{{ url_for('admin_delete_prop', prop_id=prop.id) }}" class="inline-form delete-form">
                     <button type="submit" class="delete-link" onclick="return confirm('Delete this prop? This cannot be undone.')">Delete</button>

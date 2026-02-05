@@ -368,6 +368,38 @@ def admin_delete_prop(prop_id):
     flash('Prop deleted!', 'success')
     return redirect(url_for('admin_props'))
 
+@app.route('/admin/props/<int:prop_id>/move/<direction>', methods=['POST'])
+@admin_required
+def admin_move_prop(prop_id, direction):
+    prop = Prop.query.get_or_404(prop_id)
+    props = Prop.query.order_by(Prop.order, Prop.id).all()
+    
+    # Find current index
+    current_index = next((i for i, p in enumerate(props) if p.id == prop_id), None)
+    
+    if current_index is None:
+        flash('Prop not found!', 'error')
+        return redirect(url_for('admin_props'))
+    
+    if direction == 'up' and current_index > 0:
+        # Swap with previous prop
+        other_prop = props[current_index - 1]
+        prop.order, other_prop.order = other_prop.order, prop.order
+        # If they have the same order value, adjust
+        if prop.order == other_prop.order:
+            prop.order -= 1
+        db.session.commit()
+    elif direction == 'down' and current_index < len(props) - 1:
+        # Swap with next prop
+        other_prop = props[current_index + 1]
+        prop.order, other_prop.order = other_prop.order, prop.order
+        # If they have the same order value, adjust
+        if prop.order == other_prop.order:
+            prop.order += 1
+        db.session.commit()
+    
+    return redirect(url_for('admin_props'))
+
 @app.route('/admin/answers')
 @admin_required
 def admin_answers():

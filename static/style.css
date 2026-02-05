@@ -1167,7 +1167,7 @@ p {
     gap: var(--space-md);
 }
 
-.edit-link, .delete-link {
+.edit-link, .delete-link, .move-link {
     font-family: var(--font-body);
     font-size: 0.8rem;
     font-weight: 700;
@@ -1184,6 +1184,15 @@ p {
 
 .delete-link {
     color: var(--red);
+}
+
+.move-link {
+    color: var(--turf-light);
+}
+
+.move-link:disabled {
+    color: #444;
+    cursor: not-allowed;
 }
 
 .delete-form {
