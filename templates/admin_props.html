@@ -14,15 +14,7 @@
 
 {% if props %}
 <div class="props-admin-list">
-    {% set current_category = namespace(value='') %}
     {% for prop in props %}
-        {% if prop.category != current_category.value %}
-            {% set current_category.value = prop.category %}
-            <div class="category-header admin-category">
-                <h3>{{ prop.category }}</h3>
-            </div>
-        {% endif %}
-        
         <div class="prop-admin-card {% if prop.resolved %}resolved{% endif %}">
             <div class="prop-admin-header">
                 <span class="prop-order">#{{ loop.index }}</span>
@@ -31,6 +23,10 @@
                 <span class="resolved-badge">✓ Resolved</span>
                 {% endif %}
             </div>
+            
+            {% if prop.note %}
+            <div class="prop-admin-note">Note: {{ prop.note }}</div>
+            {% endif %}
             
             <div class="prop-admin-answers">
                 {% for answer in prop.answers|sort(attribute='order') %}
@@ -57,4 +53,3 @@
 </div>
 {% endif %}
 {% endblock %}
-

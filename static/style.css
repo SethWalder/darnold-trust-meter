@@ -236,10 +236,6 @@ p {
     box-shadow: none;
 }
 
-.btn-icon {
-    font-size: 1.5rem;
-}
-
 .btn-text {
     font-size: 1.2rem;
     text-transform: uppercase;
@@ -357,19 +353,6 @@ p {
     margin-top: var(--space-sm);
 }
 
-.category-header {
-    background: var(--gold);
-    color: var(--dark);
-    padding: var(--space-sm) var(--space-lg);
-    margin: var(--space-xl) 0 var(--space-md);
-}
-
-.category-header h3 {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    margin: 0;
-}
-
 .prop-card {
     display: flex;
     gap: var(--space-md);
@@ -405,6 +388,14 @@ p {
     font-size: 1rem;
     font-weight: 700;
     color: var(--white);
+    margin-bottom: var(--space-sm);
+}
+
+.prop-note {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-style: italic;
+    color: #aaa;
     margin-bottom: var(--space-md);
 }
 
@@ -925,6 +916,7 @@ p {
 }
 
 .admin-stat .stat-number {
+    display: block;
     font-family: var(--font-pixel);
     font-size: 1.5rem;
     color: var(--gold);
@@ -1020,6 +1012,24 @@ p {
     color: #888;
 }
 
+.status-badge.open {
+    background: var(--turf-dark);
+    border-color: var(--turf-light);
+    color: var(--turf-light);
+}
+
+.status-badge.locked {
+    background: #4a1010;
+    border-color: var(--red);
+    color: #ff6666;
+}
+
+.status-badge.live {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--dark);
+}
+
 .admin-nav-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1080,10 +1090,6 @@ p {
     color: var(--dark);
 }
 
-.admin-category {
-    margin-top: var(--space-lg);
-}
-
 .prop-admin-card {
     background: var(--darker);
     border: 2px solid var(--turf-light);
@@ -1123,6 +1129,14 @@ p {
     color: var(--gold);
     font-weight: 700;
     text-transform: uppercase;
+}
+
+.prop-admin-note {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #aaa;
+    margin-bottom: var(--space-sm);
 }
 
 .prop-admin-answers {
@@ -1199,6 +1213,7 @@ p {
     font-family: var(--font-body);
     font-size: 0.8rem;
     color: #888;
+    margin-top: var(--space-xs);
     margin-bottom: var(--space-md);
 }
 

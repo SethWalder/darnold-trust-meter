@@ -15,13 +15,14 @@
     </div>
     
     <div class="form-group">
-        <label for="category">Category</label>
-        <input type="text" id="category" name="category" value="{{ prop.category }}">
+        <label for="note">Note (optional)</label>
+        <input type="text" id="note" name="note" value="{{ prop.note or '' }}" placeholder="e.g., Must be during game broadcast">
+        <p class="form-hint">Add clarification if needed. This will appear below the question.</p>
     </div>
     
     <div class="form-group">
         <label>Answer Options</label>
-        <p class="form-hint">⚠️ Warning: Editing answers may affect existing picks!</p>
+        <p class="form-hint">Warning: Editing answers may affect existing picks!</p>
         
         <div id="answers-container">
             {% for answer in prop.answers|sort(attribute='order') %}
@@ -67,4 +68,3 @@ function removeAnswer(btn) {
 }
 </script>
 {% endblock %}
-

@@ -27,7 +27,7 @@ class Settings(db.Model):
 class Prop(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question = db.Column(db.String(500), nullable=False)
-    category = db.Column(db.String(100), default='General')
+    note = db.Column(db.String(300), nullable=True)
     order = db.Column(db.Integer, default=0)
     resolved = db.Column(db.Boolean, default=False)
     correct_answer_id = db.Column(db.Integer, db.ForeignKey('answer.id'), nullable=True)
@@ -287,7 +287,7 @@ def admin_props():
 def admin_add_prop():
     if request.method == 'POST':
         question = request.form.get('question', '').strip()
-        category = request.form.get('category', 'General').strip()
+        note = request.form.get('note', '').strip() or None
         
         if not question:
             flash('Question is required!', 'error')
@@ -296,7 +296,7 @@ def admin_add_prop():
         # Get max order
         max_order = db.session.query(db.func.max(Prop.order)).scalar() or 0
         
-        prop = Prop(question=question, category=category, order=max_order + 1)
+        prop = Prop(question=question, note=note, order=max_order + 1)
         db.session.add(prop)
         db.session.flush()
         
@@ -327,7 +327,7 @@ def admin_edit_prop(prop_id):
     
     if request.method == 'POST':
         prop.question = request.form.get('question', '').strip()
-        prop.category = request.form.get('category', 'General').strip()
+        prop.note = request.form.get('note', '').strip() or None
         
         # Delete existing answers
         Answer.query.filter_by(prop_id=prop.id).delete()
@@ -451,4 +451,3 @@ with app.app_context():
 
 if __name__ == '__main__':
     app.run(debug=True)
-

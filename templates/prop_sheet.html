@@ -18,19 +18,14 @@
     </div>
 
     <div class="props-list">
-        {% set current_category = namespace(value='') %}
         {% for prop in props %}
-            {% if prop.category != current_category.value %}
-                {% set current_category.value = prop.category %}
-                <div class="category-header">
-                    <h3>{{ prop.category }}</h3>
-                </div>
-            {% endif %}
-            
             <div class="prop-card" data-prop-id="{{ prop.id }}">
                 <div class="prop-number">{{ loop.index }}</div>
                 <div class="prop-content">
                     <h4 class="prop-question">{{ prop.question }}</h4>
+                    {% if prop.note %}
+                    <p class="prop-note">{{ prop.note }}</p>
+                    {% endif %}
                     <div class="answers-grid answers-count-{{ prop.answers|length }}">
                         {% for answer in prop.answers|sort(attribute='order') %}
                         <label class="answer-option">
@@ -49,10 +44,9 @@
 
     <div class="submit-section">
         <div class="submit-warning">
-            ⚠️ Double-check your picks! You cannot change them after submitting.
+            Double-check your picks! You cannot change them after submitting.
         </div>
         <button type="submit" class="submit-button" id="submit-btn">
-            <span class="button-icon">🏈</span>
             Submit My Picks
         </button>
     </div>
@@ -100,4 +94,3 @@ document.querySelectorAll('.answer-option input').forEach(function(input) {
 });
 </script>
 {% endblock %}
-
