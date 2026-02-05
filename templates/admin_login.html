@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="admin-login-page">
+    <div class="login-card">
+        <div class="login-icon">🔐</div>
+        <h2>Admin Access</h2>
+        <p>Enter the password to access the admin panel.</p>
+        
+        <form method="POST" action="{{ url_for('admin_login') }}">
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autofocus>
+            </div>
+            <button type="submit" class="login-button">Enter</button>
+        </form>
+        
+        <a href="{{ url_for('index') }}" class="back-link">← Back to Home</a>
+    </div>
+</div>
+{% endblock %}
+

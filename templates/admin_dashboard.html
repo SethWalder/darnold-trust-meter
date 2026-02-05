@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h2>Admin Dashboard</h2>
+    <a href="{{ url_for('admin_logout') }}" class="logout-link">Logout</a>
+</div>
+
+<div class="admin-stats">
+    <div class="admin-stat">
+        <span class="stat-number">{{ props_count }}</span>
+        <span class="stat-label">Props Created</span>
+    </div>
+    <div class="admin-stat">
+        <span class="stat-number">{{ entries_count }}</span>
+        <span class="stat-label">Entries</span>
+    </div>
+    <div class="admin-stat">
+        <span class="stat-number">{{ resolved_count }}</span>
+        <span class="stat-label">Props Resolved</span>
+    </div>
+</div>
+
+<div class="admin-controls">
+    <div class="control-section">
+        <h3>Game Controls</h3>
+        <div class="control-buttons">
+            <form method="POST" action="{{ url_for('admin_settings') }}" class="inline-form">
+                {% if not settings.game_started %}
+                <input type="hidden" name="action" value="start_game">
+                <button type="submit" class="control-btn start-btn">
+                    🚀 Start Game (Reveal All Picks)
+                </button>
+                {% else %}
+                <input type="hidden" name="action" value="stop_game">
+                <button type="submit" class="control-btn stop-btn">
+                    ⏸️ Hide Picks Again
+                </button>
+                {% endif %}
+            </form>
+            
+            <form method="POST" action="{{ url_for('admin_settings') }}" class="inline-form">
+                {% if not settings.submissions_locked %}
+                <input type="hidden" name="action" value="lock_submissions">
+                <button type="submit" class="control-btn lock-btn">
+                    🔒 Lock Submissions
+                </button>
+                {% else %}
+                <input type="hidden" name="action" value="unlock_submissions">
+                <button type="submit" class="control-btn unlock-btn">
+                    🔓 Unlock Submissions
+                </button>
+                {% endif %}
+            </form>
+        </div>
+        
+        <div class="current-status">
+            <strong>Current Status:</strong>
+            <span class="status-badge {{ 'locked' if settings.submissions_locked else 'open' }}">
+                Submissions: {{ 'Locked' if settings.submissions_locked else 'Open' }}
+            </span>
+            <span class="status-badge {{ 'live' if settings.game_started else 'hidden' }}">
+                Picks: {{ 'Visible' if settings.game_started else 'Hidden' }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="admin-nav-grid">
+    <a href="{{ url_for('admin_props') }}" class="admin-nav-card">
+        <span class="nav-icon">📝</span>
+        <h4>Manage Props</h4>
+        <p>Create, edit, and delete prop questions</p>
+    </a>
+    
+    <a href="{{ url_for('admin_answers') }}" class="admin-nav-card">
+        <span class="nav-icon">✅</span>
+        <h4>Mark Answers</h4>
+        <p>Select correct answers as the game progresses</p>
+    </a>
+    
+    <a href="{{ url_for('admin_entries') }}" class="admin-nav-card">
+        <span class="nav-icon">👥</span>
+        <h4>Manage Entries</h4>
+        <p>View and delete participant entries</p>
+    </a>
+    
+    <a href="{{ url_for('standings') }}" class="admin-nav-card">
+        <span class="nav-icon">🏆</span>
+        <h4>View Standings</h4>
+        <p>See the current leaderboard</p>
+    </a>
+</div>
+{% endblock %}
+

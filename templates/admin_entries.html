@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Entries - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h2>Manage Entries</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="back-link">← Back to Dashboard</a>
+</div>
+
+{% if entries %}
+<div class="entries-admin-list">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Submitted</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('entry_detail', entry_id=entry.id) }}">{{ entry.name }}</a>
+                </td>
+                <td>{{ entry.created_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin_delete_entry', entry_id=entry.id) }}" class="inline-form">
+                        <button type="submit" class="delete-link" 
+                                onclick="return confirm('Delete {{ entry.name }}\'s entry? This cannot be undone.')">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">👻</div>
+    <h3>No Entries Yet</h3>
+    <p>No one has submitted their picks yet.</p>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Add Prop - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h2>Add New Prop</h2>
+    <a href="{{ url_for('admin_props') }}" class="back-link">← Back to Props</a>
+</div>
+
+<form method="POST" action="{{ url_for('admin_add_prop') }}" class="prop-form">
+    <div class="form-group">
+        <label for="question">Question</label>
+        <textarea id="question" name="question" required placeholder="e.g., How long will the National Anthem be?"></textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="category">Category</label>
+        <input type="text" id="category" name="category" value="General" placeholder="e.g., National Anthem, Halftime, Game Props">
+    </div>
+    
+    <div class="form-group">
+        <label>Answer Options</label>
+        <p class="form-hint">Add all possible answers with their point values. Higher points = less likely outcome.</p>
+        
+        <div id="answers-container">
+            <div class="answer-row">
+                <input type="text" name="answer_text[]" placeholder="Answer text" required>
+                <input type="number" name="answer_points[]" placeholder="Points" value="1" min="1" required>
+                <button type="button" class="remove-answer" onclick="removeAnswer(this)">×</button>
+            </div>
+            <div class="answer-row">
+                <input type="text" name="answer_text[]" placeholder="Answer text" required>
+                <input type="number" name="answer_points[]" placeholder="Points" value="1" min="1" required>
+                <button type="button" class="remove-answer" onclick="removeAnswer(this)">×</button>
+            </div>
+        </div>
+        
+        <button type="button" class="add-answer-btn" onclick="addAnswer()">+ Add Another Answer</button>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="save-btn">Save Prop</button>
+        <a href="{{ url_for('admin_props') }}" class="cancel-btn">Cancel</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addAnswer() {
+    const container = document.getElementById('answers-container');
+    const row = document.createElement('div');
+    row.className = 'answer-row';
+    row.innerHTML = `
+        <input type="text" name="answer_text[]" placeholder="Answer text" required>
+        <input type="number" name="answer_points[]" placeholder="Points" value="1" min="1" required>
+        <button type="button" class="remove-answer" onclick="removeAnswer(this)">×</button>
+    `;
+    container.appendChild(row);
+}
+
+function removeAnswer(btn) {
+    const rows = document.querySelectorAll('.answer-row');
+    if (rows.length > 2) {
+        btn.parentElement.remove();
+    } else {
+        alert('You need at least 2 answer options!');
+    }
+}
+</script>
+{% endblock %}
+
