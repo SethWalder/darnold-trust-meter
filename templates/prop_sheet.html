@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Make Your Picks - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <span class="section-label">OFFICIAL ENTRY FORM</span>
+    <h2>The Prop Sheet</h2>
+    <p class="page-subtitle">Select one answer for each prop. Choose wisely&mdash;no changes after submission!</p>
+</div>
+
+{% if props %}
+<form method="POST" action="{{ url_for('prop_sheet') }}" id="prop-form">
+    <div class="name-entry">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" required placeholder="Enter your name..." maxlength="100">
+        <span class="name-hint">This is how you'll appear on the leaderboard</span>
+    </div>
+
+    <div class="props-list">
+        {% for prop in props %}
+            <div class="prop-card" data-prop-id="{{ prop.id }}">
+                <div class="prop-number">{{ loop.index }}</div>
+                <div class="prop-content">
+                    <h4 class="prop-question">{{ prop.question }}</h4>
+                    {% if prop.note %}
+                    <p class="prop-note">{{ prop.note }}</p>
+                    {% endif %}
+                    <div class="answers-grid answers-count-{{ prop.answers|length }}">
+                        {% for answer in prop.answers|sort(attribute='order') %}
+                        <label class="answer-option">
+                            <input type="radio" name="prop_{{ prop.id }}" value="{{ answer.id }}" required>
+                            <span class="answer-box">
+                                <span class="answer-text">{{ answer.text }}</span>
+                                <span class="answer-points">{{ answer.points }} pt{% if answer.points != 1 %}s{% endif %}</span>
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="submit-section">
+        <div class="submit-warning">
+            Double-check your picks! You cannot change them after submitting.
+        </div>
+        <button type="submit" class="submit-button" id="submit-btn">
+            Submit My Picks
+        </button>
+    </div>
+</form>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>No Props Yet!</h3>
+    <p>The prop sheet hasn't been created yet. Check back soon!</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('prop-form')?.addEventListener('submit', function(e) {
+    const props = document.querySelectorAll('.prop-card');
+    let allAnswered = true;
+    
+    props.forEach(function(prop) {
+        const propId = prop.dataset.propId;
+        const selected = prop.querySelector('input[type="radio"]:checked');
+        if (!selected) {
+            allAnswered = false;
+            prop.classList.add('unanswered');
+        } else {
+            prop.classList.remove('unanswered');
+        }
+    });
+    
+    if (!allAnswered) {
+        e.preventDefault();
+        alert('Please answer all props before submitting!');
+        document.querySelector('.unanswered')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
+
+// Visual feedback when selecting answers
+document.querySelectorAll('.answer-option input').forEach(function(input) {
+    input.addEventListener('change', function() {
+        const card = this.closest('.prop-card');
+        card.classList.add('answered');
+        card.classList.remove('unanswered');
+    });
+});
+</script>
+{% endblock %}

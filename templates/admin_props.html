@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Props - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h2>Manage Props</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="back-link">← Back to Dashboard</a>
+</div>
+
+<div class="admin-actions">
+    <a href="{{ url_for('admin_add_prop') }}" class="add-btn">+ Add New Prop</a>
+</div>
+
+{% if props %}
+<div class="props-admin-list">
+    {% for prop in props %}
+        <div class="prop-admin-card {% if prop.resolved %}resolved{% endif %}">
+            <div class="prop-admin-header">
+                <span class="prop-order">#{{ loop.index }}</span>
+                <h4>{{ prop.question }}</h4>
+                {% if prop.resolved %}
+                <span class="resolved-badge">✓ Resolved</span>
+                {% endif %}
+            </div>
+            
+            {% if prop.note %}
+            <div class="prop-admin-note">Note: {{ prop.note }}</div>
+            {% endif %}
+            
+            <div class="prop-admin-answers">
+                {% for answer in prop.answers|sort(attribute='order') %}
+                <span class="admin-answer {% if prop.correct_answer_id == answer.id %}correct{% endif %}">
+                    {{ answer.text }} ({{ answer.points }} pts)
+                </span>
+                {% endfor %}
+            </div>
+            
+            <div class="prop-admin-actions">
+                <form method="POST" action="{{ url_for('admin_move_prop', prop_id=prop.id, direction='up') }}" class="inline-form">
+                    <button type="submit" class="move-link" {% if loop.first %}disabled{% endif %}>↑ Up</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin_move_prop', prop_id=prop.id, direction='down') }}" class="inline-form">
+                    <button type="submit" class="move-link" {% if loop.last %}disabled{% endif %}>↓ Down</button>
+                </form>
+                <a href="{{ url_for('admin_edit_prop', prop_id=prop.id) }}" class="edit-link">Edit</a>
+                <form method="POST" action="{{ url_for('admin_delete_prop', prop_id=prop.id) }}" class="inline-form delete-form">
+                    <button type="submit" class="delete-link" onclick="return confirm('Delete this prop? This cannot be undone.')">Delete</button>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>No Props Yet</h3>
+    <p>Get started by <a href="{{ url_for('admin_add_prop') }}">adding your first prop</a>!</p>
+</div>
+{% endif %}
+{% endblock %}

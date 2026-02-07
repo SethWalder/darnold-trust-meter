@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Standings - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <span class="section-label">THE LEADERBOARD</span>
+    <h2>Current Standings</h2>
+    <div class="progress-bar-container">
+        <div class="progress-label">Props Resolved: {{ resolved_props }} / {{ total_props }}</div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ (resolved_props / total_props * 100) if total_props > 0 else 0 }}%"></div>
+        </div>
+    </div>
+</div>
+
+{% if not settings.game_started %}
+<div class="locked-notice">
+    <div class="locked-icon">⏳</div>
+    <h3>Waiting for Kickoff</h3>
+    <p>Standings will appear once the game starts. Check back soon!</p>
+</div>
+{% elif standings %}
+<div class="standings-table-wrapper">
+    <table class="standings-table">
+        <thead>
+            <tr>
+                <th class="col-rank">Rank</th>
+                <th class="col-name">Name</th>
+                <th class="col-correct">Correct</th>
+                <th class="col-score">Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in standings %}
+            <tr class="{% if item.rank == 1 %}first-place{% elif item.rank == 2 %}second-place{% elif item.rank == 3 %}third-place{% endif %}">
+                <td class="col-rank">
+                    {% if item.rank == 1 %}
+                        <span class="rank-medal">🥇</span>
+                    {% elif item.rank == 2 %}
+                        <span class="rank-medal">🥈</span>
+                    {% elif item.rank == 3 %}
+                        <span class="rank-medal">🥉</span>
+                    {% else %}
+                        {{ item.rank }}
+                    {% endif %}
+                </td>
+                <td class="col-name">
+                    <a href="{{ url_for('entry_detail', entry_id=item.entry.id) }}">{{ item.entry.name }}</a>
+                </td>
+                <td class="col-correct">{{ item.correct_picks }} / {{ item.total_resolved }}</td>
+                <td class="col-score">{{ item.score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="standings-footer">
+    <p>Standings update automatically as props are resolved. Refresh to see the latest!</p>
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">📊</div>
+    <h3>No Entries Yet</h3>
+    <p>Once people submit their picks, standings will appear here.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if settings.game_started %}
+<script>
+// Auto-refresh standings every 30 seconds
+setTimeout(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endif %}
+{% endblock %}
+

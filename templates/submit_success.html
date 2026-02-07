@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Picks Submitted! - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="success-page">
+    <div class="success-icon">🎉</div>
+    <h2>You're In, {{ entry.name }}!</h2>
+    <p class="success-message">Your picks have been locked in. No take-backs!</p>
+    
+    <div class="success-actions">
+        <a href="{{ url_for('entries') }}" class="action-link">
+            <span class="action-icon">👥</span>
+            <span>View All Entries</span>
+        </a>
+        <a href="{{ url_for('standings') }}" class="action-link">
+            <span class="action-icon">🏆</span>
+            <span>Check Standings</span>
+        </a>
+    </div>
+    
+    <div class="success-note">
+        <p><strong>What happens next?</strong></p>
+        <p>Once the game starts, everyone's picks will be visible. Watch the standings page to see how you stack up as props resolve!</p>
+    </div>
+</div>
+{% endblock %}
+

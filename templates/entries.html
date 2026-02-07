@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}All Entries - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <span class="section-label">THE COMPETITORS</span>
+    <h2>All Entries</h2>
+    <p class="page-subtitle">{{ entries|length }} brave souls have made their picks</p>
+</div>
+
+{% if not settings.game_started %}
+<div class="locked-notice">
+    <div class="locked-icon">🔒</div>
+    <h3>Picks Are Hidden</h3>
+    <p>Individual picks will be revealed once the game starts. Until then, all you can see is who has entered!</p>
+</div>
+{% endif %}
+
+{% if entries %}
+<div class="entries-grid">
+    {% for item in entries %}
+    <a href="{{ url_for('entry_detail', entry_id=item.entry.id) }}" class="entry-card">
+        <div class="entry-name">{{ item.entry.name }}</div>
+        {% if settings.game_started %}
+        <div class="entry-score">{{ item.score }} pts</div>
+        {% else %}
+        <div class="entry-status">✓ Submitted</div>
+        {% endif %}
+        <div class="entry-time">Entered {{ item.entry.created_at.strftime('%b %d, %I:%M %p') }}</div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">👻</div>
+    <h3>No Entries Yet</h3>
+    <p>Be the first to <a href="{{ url_for('prop_sheet') }}">submit your picks</a>!</p>
+</div>
+{% endif %}
+{% endblock %}
+

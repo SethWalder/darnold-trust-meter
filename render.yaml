@@ -1,0 +1,28 @@
+# Render Blueprint for Super Bowl With Seth
+# This file helps Render automatically configure your services
+
+databases:
+  - name: superbowl-db
+    plan: free
+    databaseName: superbowl
+    user: superbowl
+
+services:
+  - type: web
+    name: superbowl-with-seth
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: superbowl-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false  # You'll set this manually in Render dashboard
+      - key: PYTHON_VERSION
+        value: 3.11.0
+

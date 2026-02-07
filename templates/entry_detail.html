@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}{{ entry.name }}'s Picks - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <span class="section-label">ENTRY DETAIL</span>
+    <h2>{{ entry.name }}'s Picks</h2>
+    {% if settings.game_started %}
+    <div class="score-display">
+        <span class="score-label">Current Score</span>
+        <span class="score-value">{{ score }}</span>
+        <span class="score-unit">points</span>
+    </div>
+    {% endif %}
+</div>
+
+{% if not settings.game_started %}
+<div class="locked-notice">
+    <div class="locked-icon">🔒</div>
+    <h3>Picks Are Hidden</h3>
+    <p>Come back once the game starts to see {{ entry.name }}'s picks!</p>
+    <a href="{{ url_for('entries') }}" class="back-link">← Back to All Entries</a>
+</div>
+{% else %}
+
+<div class="picks-list">
+    {% set current_category = namespace(value='') %}
+    {% for prop in props %}
+        {% if prop.category != current_category.value %}
+            {% set current_category.value = prop.category %}
+            <div class="category-header">
+                <h3>{{ prop.category }}</h3>
+            </div>
+        {% endif %}
+        
+        {% set pick = picks_dict.get(prop.id) %}
+        {% if pick %}
+            {% set status = get_pick_status(pick) %}
+        {% else %}
+            {% set status = 'missing' %}
+        {% endif %}
+        
+        <div class="pick-card pick-{{ status }}">
+            <div class="pick-status-indicator">
+                {% if status == 'correct' %}
+                    <span class="status-icon correct">✓</span>
+                {% elif status == 'incorrect' %}
+                    <span class="status-icon incorrect">✗</span>
+                {% elif status == 'pending' %}
+                    <span class="status-icon pending">?</span>
+                {% else %}
+                    <span class="status-icon missing">—</span>
+                {% endif %}
+            </div>
+            <div class="pick-content">
+                <div class="pick-question">{{ prop.question }}</div>
+                {% if pick %}
+                <div class="pick-answer">
+                    <span class="answer-text">{{ pick.answer.text }}</span>
+                    <span class="answer-points">({{ pick.answer.points }} pt{% if pick.answer.points != 1 %}s{% endif %})</span>
+                </div>
+                {% if status == 'incorrect' and prop.resolved %}
+                <div class="correct-answer">
+                    Correct: {{ prop.answers|selectattr('id', 'equalto', prop.correct_answer_id)|first|attr('text') }}
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="pick-answer missing">No pick made</div>
+                {% endif %}
+            </div>
+            {% if status == 'correct' %}
+            <div class="pick-points-earned">+{{ pick.answer.points }}</div>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<div class="back-section">
+    <a href="{{ url_for('entries') }}" class="back-link">← Back to All Entries</a>
+    <a href="{{ url_for('standings') }}" class="back-link">View Standings →</a>
+</div>
+{% endif %}
+{% endblock %}
+

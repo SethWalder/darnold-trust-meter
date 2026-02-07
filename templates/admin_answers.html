@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Answers - Super Bowl With Seth{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <h2>Mark Correct Answers</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="back-link">← Back to Dashboard</a>
+</div>
+
+<p class="admin-instructions">Select the correct answer for each prop as they are resolved during the game. Scores will update automatically!</p>
+
+{% if props %}
+<div class="answers-admin-list">
+    {% set current_category = namespace(value='') %}
+    {% for prop in props %}
+        {% if prop.category != current_category.value %}
+            {% set current_category.value = prop.category %}
+            <div class="category-header admin-category">
+                <h3>{{ prop.category }}</h3>
+            </div>
+        {% endif %}
+        
+        <div class="answer-admin-card {% if prop.resolved %}resolved{% endif %}">
+            <div class="answer-admin-header">
+                <span class="prop-order">#{{ loop.index }}</span>
+                <h4>{{ prop.question }}</h4>
+            </div>
+            
+            <form method="POST" action="{{ url_for('admin_resolve_prop', prop_id=prop.id) }}" class="answer-form">
+                <div class="answer-options">
+                    <label class="answer-radio">
+                        <input type="radio" name="answer_id" value="" {% if not prop.resolved %}checked{% endif %}>
+                        <span class="radio-label unresolved-label">Not Resolved Yet</span>
+                    </label>
+                    {% for answer in prop.answers|sort(attribute='order') %}
+                    <label class="answer-radio">
+                        <input type="radio" name="answer_id" value="{{ answer.id }}" 
+                               {% if prop.correct_answer_id == answer.id %}checked{% endif %}>
+                        <span class="radio-label">{{ answer.text }} <span class="pts">({{ answer.points }} pts)</span></span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="mark-btn">
+                    {% if prop.resolved %}Update{% else %}Mark Correct{% endif %}
+                </button>
+            </form>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h3>No Props Yet</h3>
+    <p>Create some props first, then come back here to mark answers!</p>
+</div>
+{% endif %}
+{% endblock %}
+
