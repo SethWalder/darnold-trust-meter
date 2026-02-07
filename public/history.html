@@ -61,6 +61,7 @@
           <button class="time-filter-btn" data-hours="4">Last 4 Hours</button>
           <button class="time-filter-btn active" data-hours="24">Last 24 Hours</button>
           <button class="time-filter-btn" data-hours="all">Last 7 Days</button>
+          <button class="time-filter-btn" data-hours="testing">Testing</button>
         </div>
         <div class="chart-wrapper">
           <canvas id="historyChart"></canvas>
@@ -90,15 +91,27 @@
 
     // Time intervals in minutes for each filter
     const timeIntervals = {
-      1: 5,      // 1 hour view: every 5 minutes
-      4: 10,     // 4 hour view: every 10 minutes
-      24: 60,    // 24 hour view: every hour
-      all: 240   // All time view: every 4 hours
+      1: 5,        // 1 hour view: every 5 minutes
+      4: 10,       // 4 hour view: every 10 minutes
+      24: 60,      // 24 hour view: every hour
+      all: 360,    // Last 7 days view: every 6 hours
+      testing: 1   // Testing view: every 1 minute
+    };
+    
+    // Special start times for specific filters (in ET timezone)
+    const specialStartTimes = {
+      testing: new Date('2026-02-07T10:00:00-05:00') // 10 AM ET, Feb 7 2026
     };
 
     // Filter data based on time range
     function filterDataByHours(data, hours) {
       if (hours === 'all') return data;
+      
+      // Check for special start times
+      if (specialStartTimes[hours]) {
+        const cutoff = specialStartTimes[hours];
+        return data.filter(d => new Date(d.created_at) >= cutoff);
+      }
       
       const now = new Date();
       const cutoff = new Date(now.getTime() - (hours * 60 * 60 * 1000));
@@ -190,6 +203,9 @@
       return aggregateByTimeInterval(data, filtered, interval, hours);
     }
 
+    // Filters that should hide dots on the chart
+    const hideDotsFilters = ['testing'];
+    
     // Update chart with processed data
     function updateChart(processedData) {
       if (processedData.length < 1) {
@@ -202,6 +218,10 @@
       if (chart) {
         chart.data.labels = labels;
         chart.data.datasets[0].data = values;
+        // Hide or show dots based on current filter
+        const hideDots = hideDotsFilters.includes(currentFilter);
+        chart.data.datasets[0].pointRadius = hideDots ? 0 : 3;
+        chart.data.datasets[0].pointHoverRadius = hideDots ? 0 : 5;
         chart.update();
       }
     }
@@ -354,9 +374,13 @@
         document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Get filter value
+        // Get filter value (handle special string filters like 'all', 'testing')
         const hours = this.dataset.hours;
-        currentFilter = hours === 'all' ? 'all' : parseInt(hours);
+        if (hours === 'all' || hours === 'testing') {
+          currentFilter = hours;
+        } else {
+          currentFilter = parseInt(hours);
+        }
         
         // Process and update chart
         const processedData = processData(allHistoryData, currentFilter);
