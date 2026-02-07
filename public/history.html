@@ -61,7 +61,6 @@
           <button class="time-filter-btn" data-hours="4">Last 4 Hours</button>
           <button class="time-filter-btn active" data-hours="24">Last 24 Hours</button>
           <button class="time-filter-btn" data-hours="all">Last 7 Days</button>
-          <button class="time-filter-btn" data-hours="testing">Testing</button>
         </div>
         <div class="chart-wrapper">
           <canvas id="historyChart"></canvas>
@@ -94,13 +93,11 @@
       1: 5,        // 1 hour view: every 5 minutes
       4: 10,       // 4 hour view: every 10 minutes
       24: 60,      // 24 hour view: every hour
-      all: 360,    // Last 7 days view: every 6 hours
-      testing: 1   // Testing view: every 1 minute
+      all: 360     // Last 7 days view: every 6 hours
     };
     
     // Special start times for specific filters (in ET timezone)
     const specialStartTimes = {
-      testing: new Date('2026-02-07T10:00:00-05:00') // 10 AM ET, Feb 7 2026
     };
 
     // Filter data based on time range
@@ -204,7 +201,7 @@
     }
 
     // Filters that should hide dots on the chart
-    const hideDotsFilters = ['testing'];
+    const hideDotsFilters = [];
     
     // Update chart with processed data
     function updateChart(processedData) {
@@ -374,9 +371,9 @@
         document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Get filter value (handle special string filters like 'all', 'testing')
+        // Get filter value (handle special string filters like 'all')
         const hours = this.dataset.hours;
-        if (hours === 'all' || hours === 'testing') {
+        if (hours === 'all') {
           currentFilter = hours;
         } else {
           currentFilter = parseInt(hours);
