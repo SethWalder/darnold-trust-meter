@@ -209,6 +209,16 @@
     // Update chart with processed data
     function updateChart(processedData) {
       if (chart) {
+        // Set x-axis bounds for kickoff filter (start at kickoff, end at now)
+        if (currentFilter === 'kickoff') {
+          chart.options.scales.x.min = specialStartTimes.kickoff;
+          chart.options.scales.x.max = new Date();
+        } else {
+          // Auto-determine range for other filters
+          chart.options.scales.x.min = undefined;
+          chart.options.scales.x.max = undefined;
+        }
+        
         if (processedData.length < 1) {
           // Clear the chart when no data
           chart.data.labels = [];
