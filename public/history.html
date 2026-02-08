@@ -208,14 +208,18 @@
     
     // Update chart with processed data
     function updateChart(processedData) {
-      if (processedData.length < 1) {
-        return;
-      }
-      
-      const labels = processedData.map(d => new Date(d.created_at));
-      const values = processedData.map(d => d.trust_level);
-      
       if (chart) {
+        if (processedData.length < 1) {
+          // Clear the chart when no data
+          chart.data.labels = [];
+          chart.data.datasets[0].data = [];
+          chart.update();
+          return;
+        }
+        
+        const labels = processedData.map(d => new Date(d.created_at));
+        const values = processedData.map(d => d.trust_level);
+        
         chart.data.labels = labels;
         chart.data.datasets[0].data = values;
         // Hide or show dots based on current filter
