@@ -57,6 +57,7 @@
     <main>
       <div class="chart-container">
         <div class="time-filters">
+          <button class="time-filter-btn" data-hours="kickoff">Since Kickoff</button>
           <button class="time-filter-btn" data-hours="1">Last 1 Hour</button>
           <button class="time-filter-btn" data-hours="4">Last 4 Hours</button>
           <button class="time-filter-btn active" data-hours="24">Last 24 Hours</button>
@@ -90,6 +91,7 @@
 
     // Time intervals in minutes for each filter
     const timeIntervals = {
+      kickoff: 1,  // Since Kickoff: every 1 minute
       1: 5,        // 1 hour view: every 5 minutes
       4: 10,       // 4 hour view: every 10 minutes
       24: 60,      // 24 hour view: every hour
@@ -98,6 +100,7 @@
     
     // Special start times for specific filters (in ET timezone)
     const specialStartTimes = {
+      kickoff: new Date('2026-02-08T18:30:00-05:00') // 6:30 PM ET, Super Bowl kickoff
     };
 
     // Filter data based on time range
@@ -201,7 +204,7 @@
     }
 
     // Filters that should hide dots on the chart
-    const hideDotsFilters = [];
+    const hideDotsFilters = ['kickoff'];
     
     // Update chart with processed data
     function updateChart(processedData) {
@@ -371,9 +374,9 @@
         document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Get filter value (handle special string filters like 'all')
+        // Get filter value (handle special string filters like 'all', 'kickoff')
         const hours = this.dataset.hours;
-        if (hours === 'all') {
+        if (hours === 'all' || hours === 'kickoff') {
           currentFilter = hours;
         } else {
           currentFilter = parseInt(hours);
