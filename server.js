@@ -6,10 +6,11 @@ const { Pool } = require('pg');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Database connection
+// Database connection with increased pool size for higher traffic
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  max: 20 // Increased from default of 10 to handle more concurrent requests
 });
 
 // Initialize database tables
@@ -31,6 +32,7 @@ async function initializeDatabase() {
       );
       
       CREATE INDEX IF NOT EXISTS idx_clicks_created_at ON clicks(created_at);
+      CREATE INDEX IF NOT EXISTS idx_clicks_user_hash ON clicks(user_hash);
       CREATE INDEX IF NOT EXISTS idx_snapshots_created_at ON snapshots(created_at);
     `);
     console.log('✅ Database initialized');
@@ -49,8 +51,8 @@ let cachedTrustData = {
   lastUpdated: 0
 };
 
-// Update cache
-async function updateTrustCache() {
+// Update cache (optionally pass totalClicks to avoid duplicate COUNT query)
+async function updateTrustCache(knownTotalClicks = null) {
   try {
     // Only get last 100 clicks for trust calculation (much faster)
     const clicksResult = await pool.query(
@@ -58,9 +60,14 @@ async function updateTrustCache() {
     );
     const recentClicks = clicksResult.rows.reverse(); // Put back in chronological order
     
-    // Get total count
-    const countResult = await pool.query('SELECT COUNT(*) as count FROM clicks');
-    const totalClicks = parseInt(countResult.rows[0].count);
+    // Use provided count or fetch it
+    let totalClicks;
+    if (knownTotalClicks !== null) {
+      totalClicks = knownTotalClicks;
+    } else {
+      const countResult = await pool.query('SELECT COUNT(*) as count FROM clicks');
+      totalClicks = parseInt(countResult.rows[0].count);
+    }
     
     const trustLevel = calculateTrustLevel(recentClicks, totalClicks);
     const moreClicks = recentClicks.filter(c => c.direction === 'more').length;
@@ -207,8 +214,8 @@ app.post('/api/click', async (req, res) => {
     const countResult = await pool.query('SELECT COUNT(*) as count FROM clicks');
     const clickCount = parseInt(countResult.rows[0].count);
     
-    // Update the cache with new vote
-    await updateTrustCache();
+    // Update the cache with new vote (pass count to avoid duplicate query)
+    await updateTrustCache(clickCount);
     
     // Take a snapshot with every vote (for granular time-based history)
     await pool.query(
