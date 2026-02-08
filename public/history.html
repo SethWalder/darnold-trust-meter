@@ -272,6 +272,9 @@
         gradient.addColorStop(0.5, 'rgba(180, 180, 180, 0.1)');
         gradient.addColorStop(1, 'rgba(95, 168, 211, 0.2)');
         
+        // Check if dots should be hidden for current filter
+        const hideDots = hideDotsFilters.includes(currentFilter);
+        
         // Create or update chart
         if (chart) {
           chart.data.labels = labels;
@@ -290,11 +293,11 @@
                 borderWidth: 2,
                 fill: true,
                 tension: 0.3,
-                pointRadius: 3,
+                pointRadius: hideDots ? 0 : 3,
                 pointBackgroundColor: '#1a1a1a',
                 pointBorderColor: '#f5f0e6',
                 pointBorderWidth: 2,
-                pointHoverRadius: 5
+                pointHoverRadius: hideDots ? 0 : 5
               }]
             },
             options: {
