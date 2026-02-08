@@ -125,7 +125,20 @@ function calculateTrustLevel(recentClicks, totalClicks) {
   }
 }
 
-// Get current trust level (uses cache for speed)
+// Lightweight endpoint for polling - NO database hit, just returns cached data
+// Used for background polling to see other users' votes
+app.get('/api/trust-poll', (req, res) => {
+  const { trustLevel, totalClicks, moreClicks } = cachedTrustData;
+  res.json({
+    trustLevel,
+    totalClicks,
+    moreClicks,
+    lessClicks: totalClicks - moreClicks
+  });
+});
+
+// Get current trust level with cooldown check (uses cache + DB for cooldown)
+// Used on initial page load and after voting
 app.get('/api/trust', async (req, res) => {
   try {
     const userHash = getUserHash(req);

@@ -57,10 +57,10 @@
     <main>
       <div class="chart-container">
         <div class="time-filters">
-          <button class="time-filter-btn" data-hours="kickoff">Since Kickoff</button>
+          <button class="time-filter-btn active" data-hours="kickoff">Since Kickoff</button>
           <button class="time-filter-btn" data-hours="1">Last 1 Hour</button>
           <button class="time-filter-btn" data-hours="4">Last 4 Hours</button>
-          <button class="time-filter-btn active" data-hours="24">Last 24 Hours</button>
+          <button class="time-filter-btn" data-hours="24">Last 24 Hours</button>
           <button class="time-filter-btn" data-hours="all">Last 7 Days</button>
         </div>
         <div class="chart-wrapper">
@@ -87,7 +87,7 @@
   <script>
     let chart = null;
     let allHistoryData = [];
-    let currentFilter = 24; // Default to 24 hours
+    let currentFilter = 'kickoff'; // Default to Since Kickoff
 
     // Time intervals in minutes for each filter
     const timeIntervals = {

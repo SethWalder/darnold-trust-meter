@@ -82,7 +82,7 @@ function endCooldown() {
   cooldownNotice.classList.add('hidden');
 }
 
-// Fetch current trust level from server
+// Fetch current trust level from server (full version with cooldown check)
 async function fetchTrustLevel() {
   try {
     const response = await fetch('/api/trust');
@@ -97,6 +97,17 @@ async function fetchTrustLevel() {
     }
   } catch (error) {
     console.error('Failed to fetch trust level:', error);
+  }
+}
+
+// Lightweight poll for trust level (no cooldown check, faster)
+async function pollTrustLevel() {
+  try {
+    const response = await fetch('/api/trust-poll');
+    const data = await response.json();
+    updateNeedle(data.trustLevel);
+  } catch (error) {
+    console.error('Failed to poll trust level:', error);
   }
 }
 
@@ -140,8 +151,8 @@ async function submitVote(direction) {
 btnLess.addEventListener('click', () => submitVote('less'));
 btnMore.addEventListener('click', () => submitVote('more'));
 
-// Poll for updates every 10 seconds to see other users' votes
-setInterval(fetchTrustLevel, 10000);
+// Poll for updates every 20 seconds using lightweight endpoint (no DB hit)
+setInterval(pollTrustLevel, 20000);
 
 // Initial load
 fetchTrustLevel();
