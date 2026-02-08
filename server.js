@@ -257,12 +257,15 @@ app.post('/api/click', async (req, res) => {
 // Get history for the chart (returns recent snapshots, frontend will aggregate by time)
 app.get('/api/history', async (req, res) => {
   try {
-    // Only fetch last 7 days of snapshots for performance (frontend filters further)
+    // During game: only fetch since kickoff (6:30 PM ET Feb 8) for performance
+    // This dramatically reduces data sent from 50k+ rows to just game data
+    const kickoffTime = '2026-02-08 18:30:00-05';
     const result = await pool.query(
       `SELECT trust_level, total_clicks, created_at 
        FROM snapshots 
-       WHERE created_at > NOW() - INTERVAL '7 days'
-       ORDER BY created_at ASC`
+       WHERE created_at >= $1
+       ORDER BY created_at ASC`,
+      [kickoffTime]
     );
     
     const snapshots = result.rows.map(row => ({
