@@ -57,7 +57,10 @@
     <main>
       <div class="chart-container">
         <div class="time-filters">
-          <button class="time-filter-btn active" data-hours="kickoff">Since Kickoff</button>
+          <button class="time-filter-btn active" data-hours="superbowl">During Super Bowl</button>
+          <button class="time-filter-btn" data-hours="1">Last 1 Hour</button>
+          <button class="time-filter-btn" data-hours="4">Last 4 Hours</button>
+          <button class="time-filter-btn" data-hours="24">Last 24 Hours</button>
         </div>
         <div class="chart-wrapper">
           <canvas id="historyChart"></canvas>
@@ -83,30 +86,44 @@
   <script>
     let chart = null;
     let allHistoryData = [];
-    let currentFilter = 'kickoff'; // Default to Since Kickoff
+    let currentFilter = 'superbowl'; // Default to During Super Bowl
 
     // Time intervals in minutes for each filter
     const timeIntervals = {
-      kickoff: 1,  // Since Kickoff: every 1 minute
-      1: 5,        // 1 hour view: every 5 minutes
-      4: 10,       // 4 hour view: every 10 minutes
-      24: 60,      // 24 hour view: every hour
-      all: 360     // Last 7 days view: every 6 hours
+      superbowl: 1,  // During Super Bowl: every 1 minute
+      1: 5,          // 1 hour view: every 5 minutes
+      4: 10,         // 4 hour view: every 10 minutes
+      24: 60         // 24 hour view: every hour
     };
     
-    // Special start times for specific filters (in ET timezone)
+    // Special time ranges for specific filters (in ET timezone)
     const specialStartTimes = {
-      kickoff: new Date('2026-02-08T18:30:00-05:00') // 6:30 PM ET, Super Bowl kickoff
+      superbowl: new Date('2026-02-08T18:30:00-05:00') // 6:30 PM ET, Super Bowl kickoff
+    };
+    
+    const specialEndTimes = {
+      superbowl: new Date('2026-02-08T22:23:00-05:00') // 10:23 PM ET, end of Super Bowl
     };
 
     // Filter data based on time range
     function filterDataByHours(data, hours) {
       if (hours === 'all') return data;
       
-      // Check for special start times
+      // Check for special time ranges (like superbowl with start AND end)
       if (specialStartTimes[hours]) {
-        const cutoff = specialStartTimes[hours];
-        return data.filter(d => new Date(d.created_at) >= cutoff);
+        const startCutoff = specialStartTimes[hours];
+        const endCutoff = specialEndTimes[hours];
+        
+        if (endCutoff) {
+          // Filter between start and end
+          return data.filter(d => {
+            const timestamp = new Date(d.created_at);
+            return timestamp >= startCutoff && timestamp <= endCutoff;
+          });
+        } else {
+          // Just filter from start
+          return data.filter(d => new Date(d.created_at) >= startCutoff);
+        }
       }
       
       const now = new Date();
@@ -200,15 +217,15 @@
     }
 
     // Filters that should hide dots on the chart
-    const hideDotsFilters = ['kickoff'];
+    const hideDotsFilters = ['superbowl'];
     
     // Update chart with processed data
     function updateChart(processedData) {
       if (chart) {
-        // Set x-axis bounds for kickoff filter (start at kickoff, end at now)
-        if (currentFilter === 'kickoff') {
-          chart.options.scales.x.min = specialStartTimes.kickoff;
-          chart.options.scales.x.max = new Date();
+        // Set x-axis bounds for superbowl filter (fixed start and end times)
+        if (currentFilter === 'superbowl') {
+          chart.options.scales.x.min = specialStartTimes.superbowl;
+          chart.options.scales.x.max = specialEndTimes.superbowl;
         } else {
           // Auto-determine range for other filters
           chart.options.scales.x.min = undefined;
@@ -387,9 +404,9 @@
         document.querySelectorAll('.time-filter-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Get filter value (handle special string filters like 'all', 'kickoff')
+        // Get filter value (handle special string filters like 'superbowl')
         const hours = this.dataset.hours;
-        if (hours === 'all' || hours === 'kickoff') {
+        if (hours === 'superbowl') {
           currentFilter = hours;
         } else {
           currentFilter = parseInt(hours);

@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 3000;
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
-  max: 20 // Increased from default of 10 to handle more concurrent requests
+  max: 40, // Increased for high traffic
+  idleTimeoutMillis: 30000, // Close idle connections after 30s
+  connectionTimeoutMillis: 5000 // Fail fast if can't get connection
 });
 
 // Initialize database tables
@@ -257,15 +259,13 @@ app.post('/api/click', async (req, res) => {
 // Get history for the chart (returns recent snapshots, frontend will aggregate by time)
 app.get('/api/history', async (req, res) => {
   try {
-    // During game: only fetch since kickoff (6:30 PM ET Feb 8) for performance
-    // This dramatically reduces data sent from 50k+ rows to just game data
-    const kickoffTime = '2026-02-08 18:30:00-05';
+    // Fetch last 24 hours of snapshots (covers recent filters)
+    // Plus all Super Bowl data is included since it's within this range
     const result = await pool.query(
       `SELECT trust_level, total_clicks, created_at 
        FROM snapshots 
-       WHERE created_at >= $1
-       ORDER BY created_at ASC`,
-      [kickoffTime]
+       WHERE created_at > NOW() - INTERVAL '24 hours'
+       ORDER BY created_at ASC`
     );
     
     const snapshots = result.rows.map(row => ({
