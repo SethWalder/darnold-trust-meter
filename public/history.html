@@ -96,13 +96,14 @@
       24: 60         // 24 hour view: every hour
     };
     
-    // Special time ranges for specific filters (in ET timezone)
+    // Special time ranges for specific filters
+    // Note: timestamps in DB are stored as UTC but represent ET times, so use Z suffix
     const specialStartTimes = {
-      superbowl: new Date('2026-02-08T18:30:00-05:00') // 6:30 PM ET, Super Bowl kickoff
+      superbowl: new Date('2026-02-08T18:30:00Z') // 6:30 PM ET, Super Bowl kickoff
     };
     
     const specialEndTimes = {
-      superbowl: new Date('2026-02-08T22:23:00-05:00') // 10:23 PM ET, end of Super Bowl
+      superbowl: new Date('2026-02-08T22:23:00Z') // 10:23 PM ET, end of Super Bowl
     };
 
     // Filter data based on time range
