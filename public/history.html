@@ -97,13 +97,20 @@
     };
     
     // Special time ranges for specific filters
-    // Note: timestamps in DB are stored as UTC but represent ET times, so use Z suffix
+    // Note: timestamps in DB are stored as UTC but represent ET times
+    // We need TWO sets: one for filtering data (Z suffix), one for display (local time)
     const specialStartTimes = {
-      superbowl: new Date('2026-02-08T18:30:00Z') // 6:30 PM ET, Super Bowl kickoff
+      superbowl: new Date('2026-02-08T18:30:00Z') // For filtering against DB timestamps
     };
-    
     const specialEndTimes = {
-      superbowl: new Date('2026-02-08T22:23:00Z') // 10:23 PM ET, end of Super Bowl
+      superbowl: new Date('2026-02-08T22:23:00Z') // For filtering against DB timestamps
+    };
+    // Display times (shown on x-axis) - use local time format
+    const displayStartTimes = {
+      superbowl: new Date(2026, 1, 8, 18, 30, 0) // 6:30 PM local time for display
+    };
+    const displayEndTimes = {
+      superbowl: new Date(2026, 1, 8, 22, 23, 0) // 10:23 PM local time for display
     };
 
     // Filter data based on time range
@@ -223,10 +230,10 @@
     // Update chart with processed data
     function updateChart(processedData) {
       if (chart) {
-        // Set x-axis bounds for superbowl filter (fixed start and end times)
+        // Set x-axis bounds for superbowl filter (use display times for correct labels)
         if (currentFilter === 'superbowl') {
-          chart.options.scales.x.min = specialStartTimes.superbowl;
-          chart.options.scales.x.max = specialEndTimes.superbowl;
+          chart.options.scales.x.min = displayStartTimes.superbowl;
+          chart.options.scales.x.max = displayEndTimes.superbowl;
         } else {
           // Auto-determine range for other filters
           chart.options.scales.x.min = undefined;
