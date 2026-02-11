@@ -97,20 +97,12 @@
     };
     
     // Special time ranges for specific filters
-    // Note: timestamps in DB are stored as UTC but represent ET times
-    // We need TWO sets: one for filtering data (Z suffix), one for display (local time)
+    // Timestamps in DB are stored as UTC, so use Z suffix to match
     const specialStartTimes = {
-      superbowl: new Date('2026-02-08T18:30:00Z') // For filtering against DB timestamps
+      superbowl: new Date('2026-02-08T18:30:00Z')
     };
     const specialEndTimes = {
-      superbowl: new Date('2026-02-08T22:23:00Z') // For filtering against DB timestamps
-    };
-    // Display times (shown on x-axis) - use local time format
-    const displayStartTimes = {
-      superbowl: new Date(2026, 1, 8, 18, 30, 0) // 6:30 PM local time for display
-    };
-    const displayEndTimes = {
-      superbowl: new Date(2026, 1, 8, 22, 23, 0) // 10:23 PM local time for display
+      superbowl: new Date('2026-02-08T22:23:00Z')
     };
 
     // Filter data based on time range
@@ -230,10 +222,10 @@
     // Update chart with processed data
     function updateChart(processedData) {
       if (chart) {
-        // Set x-axis bounds for superbowl filter (use display times for correct labels)
+        // Set x-axis bounds for superbowl filter
         if (currentFilter === 'superbowl') {
-          chart.options.scales.x.min = displayStartTimes.superbowl;
-          chart.options.scales.x.max = displayEndTimes.superbowl;
+          chart.options.scales.x.min = specialStartTimes.superbowl;
+          chart.options.scales.x.max = specialEndTimes.superbowl;
         } else {
           // Auto-determine range for other filters
           chart.options.scales.x.min = undefined;
@@ -345,7 +337,7 @@
                   callbacks: {
                     title: function(context) {
                       const date = new Date(context[0].parsed.x);
-                      return date.toLocaleString();
+                      return date.toLocaleString('en-US', { timeZone: 'UTC' });
                     },
                     label: function(context) {
                       return 'Trust Level: ' + Math.round(context.raw) + '%';
@@ -358,6 +350,7 @@
                   type: 'time',
                   time: {
                     displayFormats: {
+                      minute: 'h:mm a',
                       hour: 'MMM d, ha',
                       day: 'MMM d'
                     }
@@ -371,6 +364,10 @@
                     font: {
                       family: "'Libre Baskerville', serif",
                       size: 11
+                    },
+                    callback: function(value) {
+                      const date = new Date(value);
+                      return date.toLocaleTimeString('en-US', { timeZone: 'UTC', hour: 'numeric', minute: '2-digit' });
                     }
                   }
                 },
