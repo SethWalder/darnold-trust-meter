@@ -259,8 +259,8 @@ app.post('/api/click', async (req, res) => {
 // Get history for the chart (returns recent snapshots, frontend will aggregate by time)
 app.get('/api/history', async (req, res) => {
   try {
-    // Fetch last 24 hours PLUS Super Bowl time range using UNION for better performance
-    // Note: timestamps are stored as UTC but represent ET times, so query without timezone offset
+    // Fetch last 24 hours PLUS Super Bowl time range using UNION
+    // Super Bowl: 6:30 PM ET = 23:30 UTC Feb 8, 10:23 PM ET = 03:23 UTC Feb 9
     const result = await pool.query(
       `(SELECT trust_level, total_clicks, created_at 
         FROM snapshots 
@@ -268,8 +268,8 @@ app.get('/api/history', async (req, res) => {
        UNION
        (SELECT trust_level, total_clicks, created_at 
         FROM snapshots 
-        WHERE created_at >= '2026-02-08 18:30:00' 
-          AND created_at <= '2026-02-08 22:23:00')
+        WHERE created_at >= '2026-02-08 23:30:00' 
+          AND created_at <= '2026-02-09 03:23:00')
        ORDER BY created_at ASC`
     );
     

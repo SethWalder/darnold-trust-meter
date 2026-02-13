@@ -97,12 +97,12 @@
     };
     
     // Special time ranges for specific filters
-    // Timestamps in DB are stored as UTC, so use Z suffix to match
+    // 6:30 PM ET = 23:30 UTC, 10:23 PM ET = 03:23 UTC next day
     const specialStartTimes = {
-      superbowl: new Date('2026-02-08T18:30:00Z')
+      superbowl: new Date('2026-02-08T23:30:00Z')
     };
     const specialEndTimes = {
-      superbowl: new Date('2026-02-08T22:23:00Z')
+      superbowl: new Date('2026-02-09T03:23:00Z')
     };
 
     // Filter data based on time range
@@ -337,7 +337,7 @@
                   callbacks: {
                     title: function(context) {
                       const date = new Date(context[0].parsed.x);
-                      return date.toLocaleString('en-US', { timeZone: 'UTC' });
+                      return date.toLocaleString();
                     },
                     label: function(context) {
                       return 'Trust Level: ' + Math.round(context.raw) + '%';
@@ -364,10 +364,6 @@
                     font: {
                       family: "'Libre Baskerville', serif",
                       size: 11
-                    },
-                    callback: function(value) {
-                      const date = new Date(value);
-                      return date.toLocaleTimeString('en-US', { timeZone: 'UTC', hour: 'numeric', minute: '2-digit' });
                     }
                   }
                 },
